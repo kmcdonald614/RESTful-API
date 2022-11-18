@@ -1,5 +1,5 @@
 # RESTful-API
-##SQL Database Information: 
+## SQL Database Information: 
 
 -Codes: 
   1. Code (INTEGER) - crime incident type numeric code
@@ -16,8 +16,8 @@
   6. neighborhood_number (INTEGER): neighborhood id where incident occurred
   7. block (TEXT): approximate address where incident occurred
 
-##Assignment TODO List
-Implement the following to earn 30/40 points (Grade: C)
+## Assignment TODO List
+### Implement the following to earn 30/40 points (Grade: C)
 - Package.json
     1. Fill out the author and contributors sections in package.json (author should be whoever's   
        GitHub account is used to host the code, contributors should be all group members)
@@ -115,7 +115,7 @@ Implement the following to earn 30/40 points (Grade: C)
        I. Remove data from the SQLite3 database
        II. Data fields: case_number
        NOTE: response should reject (status 500) if the case number does not exist in the database
-Implement Following to features to earn a B or A
+### Implement Following to features to earn a B or A
 - Add the following query option for GET /codes (2pts)
     I. code - comma separated list of codes to include in result. 
     ``` ?code=110, 700```
