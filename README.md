@@ -66,7 +66,7 @@
          {"id": 15, "name": "Highland"},
          {"id": 16, "name": "Summit Hill"},
          {"id": 17, "name": "Capitol River"}
-     ]
+       ]
        ```
     3. GET /incidents
        I. Return JSON object with list of crime incidents (ordered by date/time). Note date and   
@@ -74,7 +74,7 @@
        II. Example: 
        ``` JSON
        [
-         {
+          {
             "case_number": "19245020",
             "date": "2019-10-30",
             "time": "23:57:08",
