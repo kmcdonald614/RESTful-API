@@ -1,13 +1,13 @@
 # RESTful-API
 ## SQL Database Information: 
 
--Codes: 
+- Codes: 
   1. Code (INTEGER) - crime incident type numeric code
   2. incident_type (TEXT) - crime incident type description
--Neighborhoods:
+- Neighborhoods:
   1. neighborhood_number (INTEGER) - neighborhood id
   2. neightborhood_name (TEXT) - neighborhood name
--Incidents: 
+- Incidents: 
   1. case_number (TEXT): unique id from crime case
   2. date_time (DATETIME): date and time when incident took place
   3. code (INTEGER): crime incident type numeric code
@@ -135,4 +135,10 @@
     VI. limit - maximum number of incidents to include in result ``` ?limit=50 ``` 
     By default the limit should be 1,000. Result should include the N most recent incidents (within     specified date range).
 
+
+### Query that may help in project from 11/18/2022 Class Period
+``` SQL 
+SELECT * FROM Incidents ORDER BY date-time DESC LIMIT 50;
+``` 
+- The above SQL statement limits to first 50 results returned from the Incidents table where they are ordered in descending order by the date attribute. 
 
