@@ -118,7 +118,7 @@ function addClauseParam(sqlQuery, sqlParams, condition, userQuery, clause, respo
         let numOfParams = userQuery.split(',');
         if (numOfParams.indexOf('') !== -1) {
             // need to determine better way of sending this message!
-            response.status(200).type('text').send("Empty item in list. Please check search parameters... (e.g. ?limit=50)");
+            response.status(406).type('text').send("Empty item in list. Please check search parameters... (e.g. ?limit=50)");
             return [false, false, false];
         }
         sqlParams.push(numOfParams[0]);
@@ -140,7 +140,7 @@ function queryCheck(userQuery, response) {
     for (let data in userQuery) {
         for (let keyword in data) {
             if (data[keyword].toUpperCase() === data[keyword]) {
-                response.status(404).type('text').send('Capital letter in query... Please reformat to (e.g. ?limit=15)')
+                response.status(406).type('text').send('Capital letter in query... Please reformat to (e.g. ?limit=15)')
                 return true;
             }
         }
@@ -158,8 +158,16 @@ app.put('/new-incident', (req, res) => {
 
 // DELETE request handler for new crime incident
 app.delete('/remove-incident', (req, res) => {
+    let incident_num = req.body.case_number;
+    if (incident_num === undefined) {
+        res.status(406).type('text').send('Invalid response... Please format in JSON (e.g. { "case_number": 5 })'
+        )
+    }
     console.log(req.body); // uploaded data
-    
+    // database case_number check
+
+    // database removal operation -- status 500 -- mention case number being in between
+    // a certain range
     res.status(200).type('txt').send('OK'); // <-- you may need to change this
 });
 
