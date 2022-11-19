@@ -19,13 +19,13 @@
 ## Assignment TODO List
 ### Implement the following to earn 30/40 points (Grade: C)
 - Package.json
-    1. Fill out the author and contributors sections in package.json (author should be whoever's   
+    - [x] Fill out the author and contributors sections in package.json (author should be whoever's   
        GitHub account is used to host the code, contributors should be all group members)
-    2. Fill out the URL of the repository
-    3. Ensure all used modules downloaded via NPM are in the dependencies object
-    4. Ensure that the "node_modules" folder is not included on your GitHub repository
+    - [x] Fill out the URL of the repository
+    - [x] Ensure all used modules downloaded via NPM are in the dependencies object
+    - [x] Ensure that the "node_modules" folder is not included on your GitHub repository
 - Add the following routes for your API 
-    1. GET /codes
+    - [ ] GET /codes
        I. Return JSON array with list of codes and their corresponding incident type (ordered by   
          code number)
        II. Example: 
@@ -43,7 +43,7 @@
              ...
           ]
           ```
-    2. GET /neighorhoods
+    - [ ] GET /neighorhoods
        I. Return JSON object with list of neightborhood ids and their corresponding neightborhood 
          name (ordered by id)
        II. Example: 
@@ -68,7 +68,7 @@
          {"id": 17, "name": "Capitol River"}
        ]
        ```
-    3. GET /incidents
+    - [ ] GET /incidents
        I. Return JSON object with list of crime incidents (ordered by date/time). Note date and   
           time should be separate fields
        II. Example: 
@@ -107,24 +107,24 @@
          ...
        ]
        ```
-    4. PUT /new-incident
+    - [ ] PUT /new-incident
        I. Upload incident data to be inserted into the SQLite3 database
        II. Data fields: case_number, date, time, code, incident, police_grid, neighborhood_number,            block
        NOTE: response should reject (status 500) if the case number already exists in the database
-    5. DELETE /remove-incident
+    - [ ] DELETE /remove-incident
        I. Remove data from the SQLite3 database
        II. Data fields: case_number
        NOTE: response should reject (status 500) if the case number does not exist in the database
 ### Implement Following to features to earn a B or A
-- Add the following query option for GET /codes (2pts)
+- [ ] Add the following query option for GET /codes (2pts)
     I. code - comma separated list of codes to include in result. 
     ``` ?code=110, 700```
     II. By default all codes should be included
-- Add the following query options for GET /neighborhood (2pts)
+- [ ] Add the following query options for GET /neighborhood (2pts)
     I. id - comma separated list of neighborhood numbers to include in result 
     ``` ?id=11, 14```
     II. By default all neighborhoods should be included
-- Add the following query options for GET /incidents (6pts)
+- [ ] Add the following query options for GET /incidents (6pts)
     I. start_date - first date to include in results ``` ?start_date=2019-09-01 ```
     II. end_date - last date to include in results ``` ?end_date=2019-10-31 ```
     III. code - comma separated list of codes to include in result ``` ?code=110,700 ``` 
