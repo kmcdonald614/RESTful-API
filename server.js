@@ -41,88 +41,113 @@ app.get('/neighborhoods', (req, res) => {
 
 // GET request handler for crime incidents
 app.get('/incidents', (req, res) => {
-    console.log(req.query); // query object (key-value pairs after the ? in the url)
+    // Check query for capital letter occurance
+    if (queryCheck(req.query, res) === true) {return;}
+    // console.log(req.query); // query object (key-value pairs after the ? in the url)
     let query = `SELECT case_number, date(date_time) AS date, time(date_time) AS time, code, incident, police_grid, 
     neighborhood_number, block FROM Incidents`;
-    let clause = 'WHERE'
+    let clause = 'WHERE';
     let params = [];
-
-    // Will reduce and organize this later...
-
+    // Checks if req.query indicates any of the following conditional 
+    // statements we want to restrict our SQL query to. 
     if (req.query.hasOwnProperty('start_date')) {
-        query = `${query} ${clause} date(date_time) >= ?`;
-        params.push(req.query.start_date);
-        clause = 'AND';
+        [query, params, clause] = addClauseParam(query, params, 
+            'date(date_time) >= ? ', req.query.start_date, clause, res);
+        if (query === false) {return;}
     }
     if (req.query.hasOwnProperty('end_date')) {
-        query = `${query} ${clause} date(date_time) <= ?`;
-        params.push(req.query.end_date);
-        clause = 'AND';
+        [query, params, clause] = addClauseParam(query, params, 
+            'date(date_time) <= ? ', req.query.end_date, clause, res);
+        if (query === false) {return;}
     }
     if (req.query.hasOwnProperty('code')) {
-        query = `${query} ${clause} code = ?`;
-        let numOfParams = req.query.code.split(',');
-        if (numOfParams.indexOf('') !== -1) {
-            res.status(200).type('text').send("Empty item in list. Please check search parameters...");
-            return;
-        }
-        params.push(numOfParams[0]);
-        clause = 'AND'
-        for (let i = 1; i < numOfParams.length; i++) {
-            params.push(numOfParams[i]);
-            query = `${query} ${clause} code = ?`   
-        }
-        console.log(query)
+        [query, params, clause] = addClauseParam(query, params, 
+            'code = ?', req.query.code, clause, res);
+        if (query === false) {return;}
     }
-    if (req.query.hasOwnProperty('grid')) {
-        query = `${query} ${clause} police_grid = ?`;
-        let numOfParams = req.query.grid.split(',');
-        if (numOfParams.indexOf('') !== -1) {
-            res.status(200).type('text').send("Empty item in list. Please check search parameters...");
-            return;
-        }
-        params.push(numOfParams[0]);
-        clause = 'AND'
-        console.log(numOfParams)
-        for (let i = 1; i < numOfParams.length; i++) {
-            params.push(numOfParams[i]);
-            query = `${query} ${clause} police_grid = ?`        
-        }
+    if (req.query.hasOwnProperty('police_grid')) {
+        [query, params, clause] = addClauseParam(query, params, 
+            'police_grid = ? ', req.query.police_grid, clause, res);
+        if (query === false) {return;}
     }
     if (req.query.hasOwnProperty('neighborhood')) {
-        query = `${query} ${clause} neighborhood_number = ?`;
-        let numOfParams = req.query.neighborhood.split(',');
-        if (numOfParams.indexOf('') !== -1) {
-            res.status(200).type('text').send("Empty item in list. Please check search parameters...");
-            return;
-        }
-        params.push(numOfParams[0]);
-        clause = 'AND'
-        for (let i = 1; i < numOfParams.length; i++) {
-            params.push(numOfParams[i]);
-            query = `${query} ${clause} neighborhood_number = ?`   
-        }
+        [query, params, clause] = addClauseParam(query, params, 
+            'neighborhood_number = ?', req.query.neighborhood, clause, res);
+        if (query === false) {return;}
     }
+    query = `${query} ORDER BY date_time DESC`
     if (req.query.hasOwnProperty('limit')) {
         query = `${query} LIMIT ?`; 
-        params.push(req.query.limit)    
+        params.push(req.query.limit);    
     } else {
-        query = `${query} LIMIT 1000`
+        query = `${query} LIMIT 1000`;
     }
-    console.log(query)
-
+    
+    // Get data
     databaseSelect(query, params)
     .then((data) => {
+        // Send data as response
         res.status(200).type('json').send(data);
     })
     .catch((err) => {
-        res.status(500).type('text').send(`Error... ${err}`)
+        // Send database error response
+        console.log(err);
+        res.status(404).type('text').send(`Internal error... Please try again later.`);
     })
 
     // res.status(200).type('text').send(query); // <-- easier testing query building
 
     // res.status(200).type('json').send({}); // <-- you will need to change this
 });
+
+/**
+ * This method inputs all the values below and returns an array
+ * of values. The first is the edited SQL Query, the second are the 
+ * parameters added based on edited SQL Query and the third is the 
+ * current condition of the clause. Will return false if an error is found. 
+ * @param {Current created SQLITE3 Query} sqlQuery 
+ * @param {Parameters substituted for ? in SQLITE3 Query} sqlParams 
+ * @param {Is part of condition that is added to end of SQL Query} condition 
+ * @param {Data from user query retrieved fro URL} userQuery 
+ * @param {Will either be OR, AND or WHERE} clause 
+ * @param {Response sent to page} response 
+ * @returns 
+ */
+function addClauseParam(sqlQuery, sqlParams, condition, userQuery, clause, response) {
+        sqlQuery = `${sqlQuery} ${clause} ${condition}`;
+        let numOfParams = userQuery.split(',');
+        if (numOfParams.indexOf('') !== -1) {
+            // need to determine better way of sending this message!
+            response.status(200).type('text').send("Empty item in list. Please check search parameters... (e.g. ?limit=50)");
+            return [false, false, false];
+        }
+        sqlParams.push(numOfParams[0]);
+        clause = 'OR';
+        for (let i = 1; i < numOfParams.length; i++) {
+            sqlParams.push(numOfParams[i]);
+            sqlQuery = `${sqlQuery} ${clause} ${condition}`;   
+        }
+        clause = 'AND';
+        return [sqlQuery, sqlParams, clause]
+}
+/**
+ * Will return true if a capital letter found and false otherwise.
+ * @param {Query that is received from user} userQuery 
+ * @param {Response that will be sent to user} response 
+ * @returns 
+ */
+function queryCheck(userQuery, response) {
+    for (let data in userQuery) {
+        for (let keyword in data) {
+            if (data[keyword].toUpperCase() === data[keyword]) {
+                response.status(404).type('text').send('Capital letter in query... Please reformat to (e.g. ?limit=15)')
+                return true;
+            }
+        }
+    }
+    return false; 
+}
+
 
 // PUT request handler for new crime incident
 app.put('/new-incident', (req, res) => {
