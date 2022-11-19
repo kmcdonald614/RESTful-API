@@ -30,18 +30,18 @@
          code number)
        II. Example: 
           ``` JSON
-          [
-             {"code": 110, "type": "Murder, Non Negligent Manslaughter"},
-             {"code": 120, "type": "Murder, Manslaughter By Negligence"},
-             {"code": 210, "type": "Rape, By Force"},
-             {"code": 220, "type": "Rape, Attempt"},
-             {"code": 300, "type": "Robbery"},
-             {"code": 311, "type": "Robbery, Highway, Firearm"},
-             {"code": 312, "type": "Robbery, Highway, Knife or Cutting Instrument"},
-             {"code": 313, "type": "Robbery, Highway, Other Dangerous Weapons"},
-             {"code": 314, "type": "Robbery, Highway, By Strong Arm"},
-             ...
-          ]
+            [
+               {"code": 110, "type": "Murder, Non Negligent Manslaughter"},
+               {"code": 120, "type": "Murder, Manslaughter By Negligence"},
+               {"code": 210, "type": "Rape, By Force"},
+               {"code": 220, "type": "Rape, Attempt"},
+               {"code": 300, "type": "Robbery"},
+               {"code": 311, "type": "Robbery, Highway, Firearm"},
+               {"code": 312, "type": "Robbery, Highway, Knife or Cutting Instrument"},
+               {"code": 313, "type": "Robbery, Highway, Other Dangerous Weapons"},
+               {"code": 314, "type": "Robbery, Highway, By Strong Arm"},
+               ...
+            ]
           ```
     - [ ] GET /neighorhoods
        I. Return JSON object with list of neightborhood ids and their corresponding neightborhood 
