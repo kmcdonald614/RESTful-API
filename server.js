@@ -42,8 +42,86 @@ app.get('/neighborhoods', (req, res) => {
 // GET request handler for crime incidents
 app.get('/incidents', (req, res) => {
     console.log(req.query); // query object (key-value pairs after the ? in the url)
-    
-    res.status(200).type('json').send({}); // <-- you will need to change this
+    let query = `SELECT case_number, date(date_time) AS date, time(date_time) AS time, code, incident, police_grid, 
+    neighborhood_number, block FROM Incidents`;
+    let clause = 'WHERE'
+    let params = [];
+
+    // Will reduce and organize this later...
+
+    if (req.query.hasOwnProperty('start_date')) {
+        query = `${query} ${clause} date(date_time) >= ?`;
+        params.push(req.query.start_date);
+        clause = 'AND';
+    }
+    if (req.query.hasOwnProperty('end_date')) {
+        query = `${query} ${clause} date(date_time) <= ?`;
+        params.push(req.query.end_date);
+        clause = 'AND';
+    }
+    if (req.query.hasOwnProperty('code')) {
+        query = `${query} ${clause} code = ?`;
+        let numOfParams = req.query.code.split(',');
+        if (numOfParams.indexOf('') !== -1) {
+            res.status(200).type('text').send("Empty item in list. Please check search parameters...");
+            return;
+        }
+        params.push(numOfParams[0]);
+        clause = 'AND'
+        for (let i = 1; i < numOfParams.length; i++) {
+            params.push(numOfParams[i]);
+            query = `${query} ${clause} code = ?`   
+        }
+        console.log(query)
+    }
+    if (req.query.hasOwnProperty('grid')) {
+        query = `${query} ${clause} police_grid = ?`;
+        let numOfParams = req.query.grid.split(',');
+        if (numOfParams.indexOf('') !== -1) {
+            res.status(200).type('text').send("Empty item in list. Please check search parameters...");
+            return;
+        }
+        params.push(numOfParams[0]);
+        clause = 'AND'
+        console.log(numOfParams)
+        for (let i = 1; i < numOfParams.length; i++) {
+            params.push(numOfParams[i]);
+            query = `${query} ${clause} police_grid = ?`        
+        }
+    }
+    if (req.query.hasOwnProperty('neighborhood')) {
+        query = `${query} ${clause} neighborhood_number = ?`;
+        let numOfParams = req.query.neighborhood.split(',');
+        if (numOfParams.indexOf('') !== -1) {
+            res.status(200).type('text').send("Empty item in list. Please check search parameters...");
+            return;
+        }
+        params.push(numOfParams[0]);
+        clause = 'AND'
+        for (let i = 1; i < numOfParams.length; i++) {
+            params.push(numOfParams[i]);
+            query = `${query} ${clause} neighborhood_number = ?`   
+        }
+    }
+    if (req.query.hasOwnProperty('limit')) {
+        query = `${query} LIMIT ?`; 
+        params.push(req.query.limit)    
+    } else {
+        query = `${query} LIMIT 1000`
+    }
+    console.log(query)
+
+    databaseSelect(query, params)
+    .then((data) => {
+        res.status(200).type('json').send(data);
+    })
+    .catch((err) => {
+        res.status(500).type('text').send(`Error... ${err}`)
+    })
+
+    // res.status(200).type('text').send(query); // <-- easier testing query building
+
+    // res.status(200).type('json').send({}); // <-- you will need to change this
 });
 
 // PUT request handler for new crime incident

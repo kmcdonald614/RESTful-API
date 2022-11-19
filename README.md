@@ -26,9 +26,9 @@
     - [x] Ensure that the "node_modules" folder is not included on your GitHub repository
 - Add the following routes for your API 
     - [ ] GET /codes
-       I. Return JSON array with list of codes and their corresponding incident type (ordered by   
+       - Return JSON array with list of codes and their corresponding incident type (ordered by   
          code number)
-       II. Example: 
+       - Example: 
        ``` JSON
               [
                {"code": 110, "type": "Murder, Non Negligent Manslaughter"},
@@ -44,9 +44,9 @@
               ]
        ```
     - [ ] GET /neighorhoods
-       I. Return JSON object with list of neightborhood ids and their corresponding neightborhood 
+       - Return JSON object with list of neightborhood ids and their corresponding neightborhood 
          name (ordered by id)
-       II. Example: 
+       - Example: 
        ``` JSON 
        [
          {"id": 1, "name": "Conway/Battlecreek/Highwood"},
@@ -68,10 +68,11 @@
          {"id": 17, "name": "Capitol River"}
        ]
        ```
-    - [ ] GET /incidents
-       I. Return JSON object with list of crime incidents (ordered by date/time). Note date and   
+    - [X] GET /incidents
+       - Return JSON object with list of crime incidents (ordered by date/time). Note date and   
           time should be separate fields
-       II. Example: 
+       - NEED TO REFACTOR CODE...
+       - Example: 
        ``` JSON
        [
           {
@@ -108,31 +109,31 @@
        ]
        ```
     - [ ] PUT /new-incident
-       I. Upload incident data to be inserted into the SQLite3 database
-       II. Data fields: case_number, date, time, code, incident, police_grid, neighborhood_number,            block
+       - Upload incident data to be inserted into the SQLite3 database
+       - Data fields: case_number, date, time, code, incident, police_grid, neighborhood_number,            block
        NOTE: response should reject (status 500) if the case number already exists in the database
     - [ ] DELETE /remove-incident
-       I. Remove data from the SQLite3 database
-       II. Data fields: case_number
+       - Remove data from the SQLite3 database
+       - Data fields: case_number
        NOTE: response should reject (status 500) if the case number does not exist in the database
 ### Implement Following to features to earn a B or A
 - [ ] Add the following query option for GET /codes (2pts)
-    I. code - comma separated list of codes to include in result. 
+    - code - comma separated list of codes to include in result. 
     ``` ?code=110, 700```
-    II. By default all codes should be included
+    - By default all codes should be included
 - [ ] Add the following query options for GET /neighborhood (2pts)
-    I. id - comma separated list of neighborhood numbers to include in result 
+    - id - comma separated list of neighborhood numbers to include in result 
     ``` ?id=11, 14```
-    II. By default all neighborhoods should be included
-- [ ] Add the following query options for GET /incidents (6pts)
-    I. start_date - first date to include in results ``` ?start_date=2019-09-01 ```
-    II. end_date - last date to include in results ``` ?end_date=2019-10-31 ```
-    III. code - comma separated list of codes to include in result ``` ?code=110,700 ``` 
+    - By default all neighborhoods should be included
+- [X] Add the following query options for GET /incidents (6pts)
+    - start_date - first date to include in results ``` ?start_date=2019-09-01 ```
+    - end_date - last date to include in results ``` ?end_date=2019-10-31 ```
+    - code - comma separated list of codes to include in result ``` ?code=110,700 ``` 
           By default all codes should be included.
-    IV. grid - comma separated list of police grid numbers to include in result ``` ?grid=38,65 ```         By default all police grids should be included.
-    V. neighborhood - comma separated list of neighborhood numbers to include in result 
+    - grid - comma separated list of police grid numbers to include in result ``` ?grid=38,65 ```         By default all police grids should be included.
+    - neighborhood - comma separated list of neighborhood numbers to include in result 
     ``` ?neighborhood=11,14 ``` By default all neighborhoods should be included.
-    VI. limit - maximum number of incidents to include in result ``` ?limit=50 ``` 
+    - limit - maximum number of incidents to include in result ``` ?limit=50 ``` 
     By default the limit should be 1,000. Result should include the N most recent incidents (within     specified date range).
 
 
