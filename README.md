@@ -29,8 +29,8 @@
        I. Return JSON array with list of codes and their corresponding incident type (ordered by   
          code number)
        II. Example: 
-          ``` JSON
-            [
+       ``` JSON
+              [
                {"code": 110, "type": "Murder, Non Negligent Manslaughter"},
                {"code": 120, "type": "Murder, Manslaughter By Negligence"},
                {"code": 210, "type": "Rape, By Force"},
@@ -41,8 +41,8 @@
                {"code": 313, "type": "Robbery, Highway, Other Dangerous Weapons"},
                {"code": 314, "type": "Robbery, Highway, By Strong Arm"},
                ...
-            ]
-          ```
+              ]
+       ```
     - [ ] GET /neighorhoods
        I. Return JSON object with list of neightborhood ids and their corresponding neightborhood 
          name (ordered by id)
