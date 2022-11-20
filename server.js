@@ -28,21 +28,21 @@ let db = new sqlite3.Database(db_filename, sqlite3.OPEN_READWRITE, (err) => {
 // GET request handler for crime codes
 app.get('/codes', (req, res) => {
     console.log(req.query); // query object (key-value pairs after the ? in the url)
-    
+
     res.status(200).type('json').send({}); // <-- you will need to change this
 });
 
 // GET request handler for neighborhoods
 app.get('/neighborhoods', (req, res) => {
     console.log(req.query); // query object (key-value pairs after the ? in the url)
-    
+
     res.status(200).type('json').send({}); // <-- you will need to change this
 });
 
 // GET request handler for crime incidents
 app.get('/incidents', (req, res) => {
     // Check query for capital letter occurance
-    if (queryCheck(req.query, res) === true) {return;}
+    if (queryCheck(req.query, res) === true) { return; }
     // console.log(req.query); // query object (key-value pairs after the ? in the url)
     let query = `SELECT case_number, date(date_time) AS date, time(date_time) AS time, code, incident, police_grid, 
     neighborhood_number, block FROM Incidents`;
@@ -51,49 +51,49 @@ app.get('/incidents', (req, res) => {
     // Checks if req.query indicates any of the following conditional 
     // statements we want to restrict our SQL query to. 
     if (req.query.hasOwnProperty('start_date')) {
-        [query, params, clause] = addClauseParam(query, params, 
+        [query, params, clause] = addClauseParam(query, params,
             'date(date_time) >= ? ', req.query.start_date, clause, res);
-        if (query === false) {return;}
+        if (query === false) { return; }
     }
     if (req.query.hasOwnProperty('end_date')) {
-        [query, params, clause] = addClauseParam(query, params, 
+        [query, params, clause] = addClauseParam(query, params,
             'date(date_time) <= ? ', req.query.end_date, clause, res);
-        if (query === false) {return;}
+        if (query === false) { return; }
     }
     if (req.query.hasOwnProperty('code')) {
-        [query, params, clause] = addClauseParam(query, params, 
+        [query, params, clause] = addClauseParam(query, params,
             'code = ?', req.query.code, clause, res);
-        if (query === false) {return;}
+        if (query === false) { return; }
     }
     if (req.query.hasOwnProperty('police_grid')) {
-        [query, params, clause] = addClauseParam(query, params, 
+        [query, params, clause] = addClauseParam(query, params,
             'police_grid = ? ', req.query.police_grid, clause, res);
-        if (query === false) {return;}
+        if (query === false) { return; }
     }
     if (req.query.hasOwnProperty('neighborhood')) {
-        [query, params, clause] = addClauseParam(query, params, 
+        [query, params, clause] = addClauseParam(query, params,
             'neighborhood_number = ?', req.query.neighborhood, clause, res);
-        if (query === false) {return;}
+        if (query === false) { return; }
     }
     query = `${query} ORDER BY date_time DESC`
     if (req.query.hasOwnProperty('limit')) {
-        query = `${query} LIMIT ?`; 
-        params.push(req.query.limit);    
+        query = `${query} LIMIT ?`;
+        params.push(req.query.limit);
     } else {
         query = `${query} LIMIT 1000`;
     }
-    
+
     // Get data
     databaseSelect(query, params)
-    .then((data) => {
-        // Send data as response
-        res.status(200).type('json').send(data);
-    })
-    .catch((err) => {
-        // Send database error response
-        console.log(err);
-        res.status(404).type('text').send(`Internal error... Please try again later.`);
-    })
+        .then((data) => {
+            // Send data as response
+            res.status(200).type('json').send(data);
+        })
+        .catch((err) => {
+            // Send database error response
+            console.log(err);
+            res.status(404).type('text').send(`Internal error... Please try again later.`);
+        })
 
     // res.status(200).type('text').send(query); // <-- easier testing query building
 
@@ -114,21 +114,21 @@ app.get('/incidents', (req, res) => {
  * @returns 
  */
 function addClauseParam(sqlQuery, sqlParams, condition, userQuery, clause, response) {
+    sqlQuery = `${sqlQuery} ${clause} ${condition}`;
+    let numOfParams = userQuery.split(',');
+    if (numOfParams.indexOf('') !== -1) {
+        // need to determine better way of sending this message!
+        response.status(406).type('text').send("Empty item in list. Please check search parameters... (e.g. ?limit=50)");
+        return [false, false, false];
+    }
+    sqlParams.push(numOfParams[0]);
+    clause = 'OR';
+    for (let i = 1; i < numOfParams.length; i++) {
+        sqlParams.push(numOfParams[i]);
         sqlQuery = `${sqlQuery} ${clause} ${condition}`;
-        let numOfParams = userQuery.split(',');
-        if (numOfParams.indexOf('') !== -1) {
-            // need to determine better way of sending this message!
-            response.status(406).type('text').send("Empty item in list. Please check search parameters... (e.g. ?limit=50)");
-            return [false, false, false];
-        }
-        sqlParams.push(numOfParams[0]);
-        clause = 'OR';
-        for (let i = 1; i < numOfParams.length; i++) {
-            sqlParams.push(numOfParams[i]);
-            sqlQuery = `${sqlQuery} ${clause} ${condition}`;   
-        }
-        clause = 'AND';
-        return [sqlQuery, sqlParams, clause]
+    }
+    clause = 'AND';
+    return [sqlQuery, sqlParams, clause]
 }
 /**
  * Will return true if a capital letter found and false otherwise.
@@ -145,30 +145,54 @@ function queryCheck(userQuery, response) {
             }
         }
     }
-    return false; 
+    return false;
 }
 
 
 // PUT request handler for new crime incident
 app.put('/new-incident', (req, res) => {
     console.log(req.body); // uploaded data
-    
+
     res.status(200).type('txt').send('OK'); // <-- you may need to change this
 });
 
 // DELETE request handler for new crime incident
 app.delete('/remove-incident', (req, res) => {
     let incident_num = req.body.case_number;
-    if (incident_num === undefined) {
-        res.status(406).type('text').send('Invalid response... Please format in JSON (e.g. { "case_number": 5 })'
-        )
+    console.log(incident_num)
+    if (incident_num == undefined) {
+        res.status(406).type('text').send('Invalid response... Please format in JSON (e.g. { "case_number": 5 })');
+        return;
     }
-    console.log(req.body); // uploaded data
+    incident_num = parseInt(incident_num);
+    // console.log(req.body); // uploaded data
     // database case_number check
+    let selectQuery = `SELECT * FROM Incidents WHERE case_number = ?`;
+    let deleteQuery = ``; //<-- still need to do this
 
+    databaseSelect(selectQuery, [incident_num])
+        .then((data) => {
+            if (data.length === 0) {
+                res.status(500).type('text').send('Case does not exist in database... Case number range: (10000000 --> 99999999)');
+                return false;
+            }
+            // return databaseRun(deleteQuery, [incident_num]); <-- after query uncomment this
+            return databaseSelect(selectQuery, [incident_num]);
+        })
+        .then((data) => {
+            if (data !== false) {
+                res.status(200).type('txt').send('OK...The case has been deleted.');
+            }
+        })
+        .catch((err) => {
+            console.log(err);
+            internalErrorMessage(res);
+        });
+
+
+    // curl -X DELETE "http://localhost:8000/remove-incident" -H "Content-Type: application/json" -d "{\"case_number\": 5}"
     // database removal operation -- status 500 -- mention case number being in between
     // a certain range
-    res.status(200).type('txt').send('OK'); // <-- you may need to change this
 });
 
 
@@ -198,6 +222,10 @@ function databaseRun(query, params) {
             }
         });
     })
+}
+
+function internalErrorMessage(response) {
+    response.status(404).type('text').send('Internal Error... Try again later.');
 }
 
 
