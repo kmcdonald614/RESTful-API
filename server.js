@@ -27,7 +27,26 @@ let db = new sqlite3.Database(db_filename, sqlite3.OPEN_READWRITE, (err) => {
 
 // GET request handler for crime codes
 app.get('/codes', (req, res) => {
+
+    // Check query for capital letter occurence
+    if(queryCheck(req.query,res)===true){return;}
+
     console.log(req.query); // query object (key-value pairs after the ? in the url)
+    let query='SELECT code, incident_type FROM Codes';
+    let clause = 'WHERE';
+    let params =[];
+
+    if(req.query.hasOwnProperty('code')){
+        [query,params,clause]= addClauseParam(query,params,
+            'code = ?' , req.query.code,clause,res);
+            if (query===false){return; }
+    }
+    if(req.query.hasOwnProperty('incident_type')){
+        [query,params,clause] = addClauseParam(query,params,
+            'incident_type = ?',req.query.incident_num,clause,res);
+        if(query===false){return; }    
+    }
+    query = `${query} ORDER BY code DESC`
 
     res.status(200).type('json').send({}); // <-- you will need to change this
 });
