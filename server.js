@@ -151,15 +151,21 @@ function queryCheck(userQuery, response) {
 
 // PUT request handler for new crime incident
 app.put('/new-incident', (req, res) => {
-    console.log(req.body); // uploaded data
-
-    res.status(200).type('txt').send('OK'); // <-- you may need to change this
-});
-
-// DELETE request handler for new crime incident
-app.delete('/remove-incident', (req, res) => {
+    // call database to retrieve database attribute names -- then 
+    // compare the attribute names with the req body -- if all 
+    // values to put in database are present, not null then 
+    // insert into database
+    console.log(req.body);
+    for (let data in req.body) {
+        // check if key is in query
+        // check to make sure that data is not undefined
+        console.log(req.body[data])
+    }
+    //case_number, date, time, code, incident, police_grid, neighborhood_number, block
     let incident_num = req.body.case_number;
-    console.log(incident_num)
+    // need to check for all parameters
+    // Question: If the value is not given as a part of the put statement should we reject or insert null or empty string '' in its place?
+    // console.log(incident_num)
     if (incident_num == undefined) {
         res.status(406).type('text').send('Invalid response... Please format in JSON (e.g. { "case_number": 5 })');
         return;
@@ -168,7 +174,44 @@ app.delete('/remove-incident', (req, res) => {
     // console.log(req.body); // uploaded data
     // database case_number check
     let selectQuery = `SELECT * FROM Incidents WHERE case_number = ?`;
-    let deleteQuery = ``; //<-- still need to do this
+    let insertQuery = `INSERT INTO Incidents (case_number, date_time, code, incident, police_grid, neighborhood_number, block) 
+    VALUES (?, ?, ?, ?, ?, ?, ?)`;
+
+    databaseSelect(selectQuery, [incident_num])
+        .then((data) => {
+            if (data.length !== 0) {
+                res.status(500).type('text').send('Case does exist in database... Please choose a new case number.');
+                return false;
+            }
+            return databaseRun(insertQuery, userQueryParams); //<-- after query uncomment this
+            //return databaseSelect(selectQuery, userQueryParams);
+        })
+        .then((data) => {
+            if (data !== false) {
+                res.status(200).type('txt').send('OK...The case has been inserted into the Database.');
+            }
+        })
+        .catch((err) => {
+            console.log(err);
+            internalErrorMessage(res);
+        });
+    // console.log(req.body); // uploaded data
+    // res.status(200).type('txt').send('OK'); // <-- you may need to change this
+});
+
+// DELETE request handler for new crime incident
+app.delete('/remove-incident', (req, res) => {
+    let incident_num = req.body.case_number;
+    // console.log(incident_num)
+    if (incident_num == undefined) {
+        res.status(406).type('text').send('Invalid response... Please format in JSON (e.g. { "case_number": 5 })');
+        return;
+    }
+    incident_num = parseInt(incident_num);
+    // console.log(req.body); // uploaded data
+    // database case_number check
+    let selectQuery = `SELECT * FROM Incidents WHERE case_number = ?`;
+    let deleteQuery = `DELETE FROM Incidents WHERE case_number = ?`; //<-- still need to do this
 
     databaseSelect(selectQuery, [incident_num])
         .then((data) => {

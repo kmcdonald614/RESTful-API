@@ -110,7 +110,7 @@
        ```
     - [ ] PUT /new-incident
        - Upload incident data to be inserted into the SQLite3 database
-       - Data fields: case_number, date, time, code, incident, police_grid, neighborhood_number,            block
+       - Data fields: case_number, date, time, code, incident, police_grid, neighborhood_number, block
        NOTE: response should reject (status 500) if the case number already exists in the database
     - [ ] DELETE /remove-incident
        - Remove data from the SQLite3 database
