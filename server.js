@@ -5,6 +5,7 @@ let path = require('path');
 // NPM modules
 let express = require('express');
 let sqlite3 = require('sqlite3');
+const { time } = require('console');
 
 
 let db_filename = path.join(__dirname, 'db', 'stpaul_crime.sqlite3');
@@ -29,22 +30,22 @@ let db = new sqlite3.Database(db_filename, sqlite3.OPEN_READWRITE, (err) => {
 app.get('/codes', (req, res) => {
 
     // Check query for capital letter occurence
-    if(queryCheck(req.query,res)===true){return;}
+    if (queryCheck(req.query, res) === true) { return; }
 
     console.log(req.query); // query object (key-value pairs after the ? in the url)
-    let query='SELECT code, incident_type FROM Codes';
+    let query = 'SELECT code, incident_type FROM Codes';
     let clause = 'WHERE';
-    let params =[];
+    let params = [];
 
-    if(req.query.hasOwnProperty('code')){
-        [query,params,clause]= addClauseParam(query,params,
-            'code = ?' , req.query.code,clause,res);
-            if (query===false){return; }
+    if (req.query.hasOwnProperty('code')) {
+        [query, params, clause] = addClauseParam(query, params,
+            'code = ?', req.query.code, clause, res);
+        if (query === false) { return; }
     }
-    if(req.query.hasOwnProperty('incident_type')){
-        [query,params,clause] = addClauseParam(query,params,
-            'incident_type = ?',req.query.incident_num,clause,res);
-        if(query===false){return; }    
+    if (req.query.hasOwnProperty('incident_type')) {
+        [query, params, clause] = addClauseParam(query, params,
+            'incident_type = ?', req.query.incident_num, clause, res);
+        if (query === false) { return; }
     }
     query = `${query} ORDER BY code DESC`
 
@@ -170,64 +171,142 @@ function queryCheck(userQuery, response) {
 
 // PUT request handler for new crime incident
 app.put('/new-incident', (req, res) => {
-    // call database to retrieve database attribute names -- then 
-    // compare the attribute names with the req body -- if all 
-    // values to put in database are present, not null then 
-    // insert into database
-    console.log(req.body);
-    for (let data in req.body) {
-        // check if key is in query
-        // check to make sure that data is not undefined
-        console.log(req.body[data])
-    }
-    //case_number, date, time, code, incident, police_grid, neighborhood_number, block
-    let incident_num = req.body.case_number;
-    // need to check for all parameters
-    // Question: If the value is not given as a part of the put statement should we reject or insert null or empty string '' in its place?
-    // console.log(incident_num)
-    if (incident_num == undefined) {
-        res.status(406).type('text').send('Invalid response... Please format in JSON (e.g. { "case_number": 5 })');
+    let case_No = req.body.case_number;
+    if (case_No === undefined) {
+        res.status(406).type('txt').send('Case Number does not exist in current input. Please check and try again...')
         return;
     }
-    incident_num = parseInt(incident_num);
-    // console.log(req.body); // uploaded data
-    // database case_number check
-    let selectQuery = `SELECT * FROM Incidents WHERE case_number = ?`;
-    let insertQuery = `INSERT INTO Incidents (case_number, date_time, code, incident, police_grid, neighborhood_number, block) 
-    VALUES (?, ?, ?, ?, ?, ?, ?)`;
+    let keys = [];
+    let values = [];
+    for (let key in req.body) {
+        values.push(req.body[key]); // gets data associated with an specific key
+        keys.push(key);
+    }
 
-    databaseSelect(selectQuery, [incident_num])
+    let neededInputs = [];
+    let insertQueryParams = [];
+    let selectQuery = `SELECT * FROM Incidents WHERE case_number = ?`;
+    let insertQuery = `INSERT INTO Incidents (`; // <-- Build rest later
+    let metaDataQuery = `SELECT name, type FROM PRAGMA_TABLE_INFO('Incidents')`;
+
+    databaseSelect(selectQuery, [case_No])
         .then((data) => {
+            // Case already exists --> cannot proceed further
             if (data.length !== 0) {
-                res.status(500).type('text').send('Case does exist in database... Please choose a new case number.');
+                res.status(500).type('text').send('The case number already exists in database... Please choose a new case number.');
                 return false;
             }
-            return databaseRun(insertQuery, userQueryParams); //<-- after query uncomment this
-            //return databaseSelect(selectQuery, userQueryParams);
+            // Case does not exist so we can proceed
+            return databaseSelect(metaDataQuery, [])
+        })
+        .then((data) => {
+            // Is in place to restrict multiple responses being sent
+            if (data === false) {
+                return false; 
+            }
+            let neededInputsTypes = [];
+            for (let x in data) {
+                // converts Database types to JavaScript Types
+                if (data[x].type == "TEXT") {
+                    neededInputsTypes.push("string");
+                } else if (data[x].type == "INTEGER") {
+                    neededInputsTypes.push("number");
+                } else {
+                    neededInputsTypes.push(data[x].type);
+                }
+                neededInputs.push(data[x].name); // Column names from database
+            }
+            // date and time are handled separately on JavaScript side --> remove combined instances from 
+            // data retrieved from database
+            if (neededInputs.includes('date_time')) {
+                neededInputs = neededInputs.filter((element) => element !== 'date_time');
+                neededInputsTypes = neededInputsTypes.filter((element) => element !== 'DATETIME');
+                neededInputs.push('time', 'date');
+            }
+            let neededInputsCount = 0;
+            // Fails if not all attributes from database are present in input received from user
+            for (let userInputKey in keys) {
+                if (!neededInputs.includes(keys[userInputKey])) {
+                    res.status(406).type('text').send(`Invalid response... Please make sure you include input data for all required fields. 
+                (case_number, date, time, code, incident, police_grid, neighborhood_number, block)`);
+                    return false;
+                }
+                neededInputsCount++;
+            }
+            // if (neededInputsCount !== 8) {
+                // res.status(406).type('text').send(`Invalid response... Please make sure you include input data for all required fields. 
+                // (case_number, date, time, code, incident, police_grid, neighborhood_number, block)`);
+                // return false; 
+            // }
+            // Order user data to match order of column names in neededInputs
+            for (let key in neededInputs) {
+                insertQueryParams.push((values[keys.indexOf(neededInputs[key])]));
+            }
+            // Flush out old date and time data and input date and time data concatenated together.
+            let date = insertQueryParams.pop();
+            let time = insertQueryParams.pop();
+            if (date == undefined || time == undefined) {
+                res.status(406).type('text').send("Date and/or Time inputs are invalid. Check your inputs and try again.");
+                return false; 
+            }
+            insertQueryParams.push(`${date}T${time}`);
+            neededInputs.pop();
+            neededInputs.pop();
+            neededInputs.push('date_time');
+            neededInputsTypes.push('string');
+            // Build Insert query
+            for (let key in neededInputs) {
+                if (key != neededInputs.length - 1) {
+                    insertQuery += `${neededInputs[key]}, `;
+                } else {
+                    insertQuery += `${neededInputs[key]}`;
+                }
+                if (typeof insertQueryParams[key] !== neededInputsTypes[key]) {
+                    res.status(406).type('text').send(`Invalid response... Please make sure you include the proper input data for all required fields. 
+                        Example: 
+                        {
+                            "case_number": "text"
+                            "date": "yyyy-mm-dd"
+                            "time": "hh:mm:ss"
+                            "code": number 
+                            "incident": "text" 
+                            "police_grid": number 
+                            "neighborhood_number": number
+                            "block": "text"
+                        }
+                        `);
+                    // response
+                    return false;
+                }
+            }
+            insertQuery += `) values (?, ?, ?, ?, ?, ?, ?);`
+            // console.log(insertQuery, insertQueryParams, neededInputsTypes)
+            // Insert into database
+            return databaseRun(insertQuery, insertQueryParams);
         })
         .then((data) => {
             if (data !== false) {
+                // data has been successfully inserted
                 res.status(200).type('txt').send('OK...The case has been inserted into the Database.');
+                return; 
+            } else {
+                return; 
             }
         })
         .catch((err) => {
-            console.log(err);
+            console.log(err)
             internalErrorMessage(res);
-        });
-    // console.log(req.body); // uploaded data
-    // res.status(200).type('txt').send('OK'); // <-- you may need to change this
+        })
 });
 
 // DELETE request handler for new crime incident
 app.delete('/remove-incident', (req, res) => {
     let incident_num = req.body.case_number;
-    // console.log(incident_num)
     if (incident_num == undefined) {
         res.status(406).type('text').send('Invalid response... Please format in JSON (e.g. { "case_number": 5 })');
         return;
     }
     incident_num = parseInt(incident_num);
-    // console.log(req.body); // uploaded data
     // database case_number check
     let selectQuery = `SELECT * FROM Incidents WHERE case_number = ?`;
     let deleteQuery = `DELETE FROM Incidents WHERE case_number = ?`; //<-- still need to do this
@@ -235,16 +314,16 @@ app.delete('/remove-incident', (req, res) => {
     databaseSelect(selectQuery, [incident_num])
         .then((data) => {
             if (data.length === 0) {
-                res.status(500).type('text').send('Case does not exist in database... Case number range: (10000000 --> 99999999)');
+                res.status(500).type('text').send('Case does not exist in database...');
                 return false;
             }
-            // return databaseRun(deleteQuery, [incident_num]); <-- after query uncomment this
-            return databaseSelect(selectQuery, [incident_num]);
+            return databaseRun(deleteQuery, incident_num);
         })
         .then((data) => {
             if (data !== false) {
                 res.status(200).type('txt').send('OK...The case has been deleted.');
             }
+            return false; 
         })
         .catch((err) => {
             console.log(err);

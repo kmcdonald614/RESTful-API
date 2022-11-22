@@ -108,11 +108,11 @@
          ...
        ]
        ```
-    - [ ] PUT /new-incident
+    - [X] PUT /new-incident
        - Upload incident data to be inserted into the SQLite3 database
        - Data fields: case_number, date, time, code, incident, police_grid, neighborhood_number, block
        NOTE: response should reject (status 500) if the case number already exists in the database
-    - [ ] DELETE /remove-incident
+    - [X] DELETE /remove-incident
        - Remove data from the SQLite3 database
        - Data fields: case_number
        NOTE: response should reject (status 500) if the case number does not exist in the database
@@ -143,3 +143,7 @@ SELECT * FROM Incidents ORDER BY date-time DESC LIMIT 50;
 ``` 
 - The above SQL statement limits to first 50 results returned from the Incidents table where they are ordered in descending order by the date attribute. 
 
+- Formatted JSON for PUT Testing: 
+   ```
+      "{\"case_number\": \"19245014\", \"date\\": \"2019-10-30\",\"time\": \"23:43:19\",\"code\": 700,\"incident\": \"Auto Theft\",\"police_grid\": 95,\"neighborhood_number\": 4,\"block\": \"79X 6 ST E\"}"
+   ```
