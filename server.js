@@ -222,22 +222,23 @@ app.put('/new-incident', (req, res) => {
                 neededInputs = neededInputs.filter((element) => element !== 'date_time');
                 neededInputsTypes = neededInputsTypes.filter((element) => element !== 'DATETIME');
                 neededInputs.push('time', 'date');
-            }
-            let neededInputsCount = 0;
+            } 
             // Fails if not all attributes from database are present in input received from user
             for (let userInputKey in keys) {
                 if (!neededInputs.includes(keys[userInputKey])) {
                     res.status(406).type('text').send(`Invalid response... Please make sure you include input data for all required fields. 
-                (case_number, date, time, code, incident, police_grid, neighborhood_number, block)`);
+                        Required Fields: 
+                        case_number
+                        date
+                        time
+                        code
+                        incident
+                        police_grid
+                        neighborhood_number
+                        block`);
                     return false;
                 }
-                neededInputsCount++;
             }
-            // if (neededInputsCount !== 8) {
-                // res.status(406).type('text').send(`Invalid response... Please make sure you include input data for all required fields. 
-                // (case_number, date, time, code, incident, police_grid, neighborhood_number, block)`);
-                // return false; 
-            // }
             // Order user data to match order of column names in neededInputs
             for (let key in neededInputs) {
                 insertQueryParams.push((values[keys.indexOf(neededInputs[key])]));
@@ -250,8 +251,8 @@ app.put('/new-incident', (req, res) => {
                 return false; 
             }
             insertQueryParams.push(`${date}T${time}`);
-            neededInputs.pop();
-            neededInputs.pop();
+            neededInputs.pop(); // <-- pop off date
+            neededInputs.pop(); // <-- pop off time
             neededInputs.push('date_time');
             neededInputsTypes.push('string');
             // Build Insert query
@@ -275,7 +276,6 @@ app.put('/new-incident', (req, res) => {
                             "block": "text"
                         }
                         `);
-                    // response
                     return false;
                 }
             }
@@ -287,7 +287,7 @@ app.put('/new-incident', (req, res) => {
         .then((data) => {
             if (data !== false) {
                 // data has been successfully inserted
-                res.status(200).type('txt').send('OK...The case has been inserted into the Database.');
+                res.status(200).type('txt').send('OK...The case has been successfully inserted into the Database.');
                 return; 
             } else {
                 return; 
