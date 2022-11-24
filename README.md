@@ -145,5 +145,5 @@ SELECT * FROM Incidents ORDER BY date-time DESC LIMIT 50;
 
 - Formatted JSON for PUT Testing: 
    ```
-      "{\"case_number\": \"19245014\", \"date\\": \"2019-10-30\",\"time\": \"23:43:19\",\"code\": 700,\"incident\": \"Auto Theft\",\"police_grid\": 95,\"neighborhood_number\": 4,\"block\": \"79X 6 ST E\"}"
+      "{\"case_number\": \"19245014\", \"date\": \"2019-10-30\",\"time\": \"23:43:19\",\"code\": 700,\"incident\": \"Auto Theft\",\"police_grid\": 95,\"neighborhood_number\": 4,\"block\": \"79X 6 ST E\"}"
    ```

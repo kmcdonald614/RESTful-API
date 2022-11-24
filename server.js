@@ -47,9 +47,8 @@ app.get('/codes', (req, res) => {
             'incident_type = ?', req.query.incident_num, clause, res);
         if (query === false) { return; }
     }
-    query = `${query} ORDER BY code DESC`
-
-    res.status(200).type('json').send({}); // <-- you will need to change this
+    query = `${query} ORDER BY code ASC`
+    // res.status(200).type('json').send({}); // <-- you will need to change this
 });
 
 // GET request handler for neighborhoods
@@ -159,10 +158,15 @@ function addClauseParam(sqlQuery, sqlParams, condition, userQuery, clause, respo
 function queryCheck(userQuery, response) {
     for (let data in userQuery) {
         for (let keyword in data) {
+            // checks to see if any of the letters in the userQuery are capitalized
             if (data[keyword].toUpperCase() === data[keyword]) {
-                response.status(406).type('text').send('Capital letter in query... Please reformat to (e.g. ?limit=15)')
+                response.status(406).type('text').send('Capital letter in query... Please reformat to all lower case (e.g. ?limit=15)')
                 return true;
             }
+        }
+        if (userQuery[data] == '') {
+            response.status(406).type('text').send('Empty parameter. Please make sure all keys associate with a value.');
+            return true;
         }
     }
     return false;
