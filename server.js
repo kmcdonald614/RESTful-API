@@ -157,16 +157,16 @@ function addClauseParam(sqlQuery, sqlParams, condition, userQuery, clause, respo
  */
 function queryCheck(userQuery, response) {
     for (let data in userQuery) {
-        for (let keyword in data) {
-            // checks to see if any of the letters in the userQuery are capitalized
-            if (data[keyword].toUpperCase() === data[keyword]) {
-                response.status(406).type('text').send('Capital letter in query... Please reformat to all lower case (e.g. ?limit=15)')
-                return true;
-            }
-        }
         if (userQuery[data] == '') {
             response.status(406).type('text').send('Empty parameter. Please make sure all keys associate with a value.');
             return true;
+        }
+        for (let keyword in data) {
+            // checks to see if any of the letters in the userQuery are capitalized
+            if (data[keyword].toUpperCase() === data[keyword] && data[keyword] !== '_') {
+                response.status(406).type('text').send('Capital letter or number in key... Please reformat to all lower case letters and no numbers (e.g. ?limit=15)')
+                return true;
+            }
         }
     }
     return false;
