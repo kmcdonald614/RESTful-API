@@ -39,12 +39,12 @@ app.get('/codes', (req, res) => {
 
     if (req.query.hasOwnProperty('code')) {
         [query, params, clause] = addClauseParam(query, params,
-            'code = ?', req.query.code, clause, res);
+            'code = ?', req.query.code, clause);
         if (query === false) { return; }
     }
     if (req.query.hasOwnProperty('incident_type')) {
         [query, params, clause] = addClauseParam(query, params,
-            'incident_type = ?', req.query.incident_num, clause, res);
+            'incident_type = ?', req.query.incident_num, clause);
         if (query === false) { return; }
     }
     query = `${query} ORDER BY code ASC`
@@ -62,39 +62,38 @@ app.get('/neighborhoods', (req, res) => {
 app.get('/incidents', (req, res) => {
     // Check query for capital letter occurance
     if (queryCheck(req.query, res) === true) { return; }
-    // console.log(req.query); // query object (key-value pairs after the ? in the url)
     let query = `SELECT case_number, date(date_time) AS date, time(date_time) AS time, code, incident, police_grid, 
     neighborhood_number, block FROM Incidents`;
     let clause = 'WHERE';
     let params = [];
-    // Checks if req.query indicates any of the following conditional 
-    // statements we want to restrict our SQL query to. 
+    // Builds SQL Database query based on client url query
     if (req.query.hasOwnProperty('start_date')) {
         [query, params, clause] = addClauseParam(query, params,
-            'date(date_time) >= ? ', req.query.start_date, clause, res);
+            'date(date_time) >= ? ', req.query.start_date, clause);
         if (query === false) { return; }
     }
     if (req.query.hasOwnProperty('end_date')) {
         [query, params, clause] = addClauseParam(query, params,
-            'date(date_time) <= ? ', req.query.end_date, clause, res);
+            'date(date_time) <= ? ', req.query.end_date, clause);
         if (query === false) { return; }
     }
     if (req.query.hasOwnProperty('code')) {
         [query, params, clause] = addClauseParam(query, params,
-            'code = ?', req.query.code, clause, res);
+            'code = ?', req.query.code, clause);
         if (query === false) { return; }
     }
     if (req.query.hasOwnProperty('police_grid')) {
         [query, params, clause] = addClauseParam(query, params,
-            'police_grid = ? ', req.query.police_grid, clause, res);
+            'police_grid = ? ', req.query.police_grid, clause);
         if (query === false) { return; }
     }
     if (req.query.hasOwnProperty('neighborhood')) {
         [query, params, clause] = addClauseParam(query, params,
-            'neighborhood_number = ?', req.query.neighborhood, clause, res);
+            'neighborhood_number = ?', req.query.neighborhood, clause);
         if (query === false) { return; }
     }
     query = `${query} ORDER BY date_time DESC`
+    
     if (req.query.hasOwnProperty('limit')) {
         query = `${query} LIMIT ?`;
         params.push(req.query.limit);
@@ -111,67 +110,9 @@ app.get('/incidents', (req, res) => {
         .catch((err) => {
             // Send database error response
             console.log(err);
-            res.status(404).type('text').send(`Internal error... Please try again later.`);
+            errorMessageFunc(res)        
         })
-
-    // res.status(200).type('text').send(query); // <-- easier testing query building
-
-    // res.status(200).type('json').send({}); // <-- you will need to change this
 });
-
-/**
- * This method inputs all the values below and returns an array
- * of values. The first is the edited SQL Query, the second are the 
- * parameters added based on edited SQL Query and the third is the 
- * current condition of the clause. Will return false if an error is found. 
- * @param {Current created SQLITE3 Query} sqlQuery 
- * @param {Parameters substituted for ? in SQLITE3 Query} sqlParams 
- * @param {Is part of condition that is added to end of SQL Query} condition 
- * @param {Data from user query retrieved fro URL} userQuery 
- * @param {Will either be OR, AND or WHERE} clause 
- * @param {Response sent to page} response 
- * @returns 
- */
-function addClauseParam(sqlQuery, sqlParams, condition, userQuery, clause, response) {
-    sqlQuery = `${sqlQuery} ${clause} ${condition}`;
-    let numOfParams = userQuery.split(',');
-    if (numOfParams.indexOf('') !== -1) {
-        // need to determine better way of sending this message!
-        response.status(406).type('text').send("Empty item in list. Please check search parameters... (e.g. ?limit=50)");
-        return [false, false, false];
-    }
-    sqlParams.push(numOfParams[0]);
-    clause = 'OR';
-    for (let i = 1; i < numOfParams.length; i++) {
-        sqlParams.push(numOfParams[i]);
-        sqlQuery = `${sqlQuery} ${clause} ${condition}`;
-    }
-    clause = 'AND';
-    return [sqlQuery, sqlParams, clause]
-}
-/**
- * Will return true if a capital letter found and false otherwise.
- * @param {Query that is received from user} userQuery 
- * @param {Response that will be sent to user} response 
- * @returns 
- */
-function queryCheck(userQuery, response) {
-    for (let data in userQuery) {
-        if (userQuery[data] == '') {
-            response.status(406).type('text').send('Empty parameter. Please make sure all keys associate with a value.');
-            return true;
-        }
-        for (let keyword in data) {
-            // checks to see if any of the letters in the userQuery are capitalized
-            if (data[keyword].toUpperCase() === data[keyword] && data[keyword] !== '_') {
-                response.status(406).type('text').send('Capital letter or number in key... Please reformat to all lower case letters and no numbers (e.g. ?limit=15)')
-                return true;
-            }
-        }
-    }
-    return false;
-}
-
 
 // PUT request handler for new crime incident
 app.put('/new-incident', (req, res) => {
@@ -284,7 +225,6 @@ app.put('/new-incident', (req, res) => {
                 }
             }
             insertQuery += `) values (?, ?, ?, ?, ?, ?, ?);`
-            // console.log(insertQuery, insertQueryParams, neededInputsTypes)
             // Insert into database
             return databaseRun(insertQuery, insertQueryParams);
         })
@@ -299,7 +239,7 @@ app.put('/new-incident', (req, res) => {
         })
         .catch((err) => {
             console.log(err)
-            internalErrorMessage(res);
+            errorMessageFunc(res);
         })
 });
 
@@ -331,13 +271,8 @@ app.delete('/remove-incident', (req, res) => {
         })
         .catch((err) => {
             console.log(err);
-            internalErrorMessage(res);
+            errorMessageFunc(res);
         });
-
-
-    // curl -X DELETE "http://localhost:8000/remove-incident" -H "Content-Type: application/json" -d "{\"case_number\": 5}"
-    // database removal operation -- status 500 -- mention case number being in between
-    // a certain range
 });
 
 
@@ -369,8 +304,66 @@ function databaseRun(query, params) {
     })
 }
 
-function internalErrorMessage(response) {
-    response.status(404).type('text').send('Internal Error... Try again later.');
+/**
+ * Sends an internal error message to the user. 
+ * @param {Client Response} response is the response of the calling DELETE, 
+ *  GET, or PUT request
+ */
+function errorMessageFunc(response) {
+    response.status(404).type('text').send('No data available. Please check your input and try again.');
+}
+
+/**
+ * Builds database query and collects parameters for database query
+ * based on client url query.
+ * @param {string} sqlQuery Current created SQLITE3 Query
+ * @param {array} sqlParams Parameters substituted for ? in SQLITE3 Query 
+ * @param {string} condition Is part of condition that is added to end of SQL Query 
+ * @param {array} userQuery Data from user query retrieved from URL 
+ * @param {string} clause Will either be OR, AND or WHERE 
+ * @param {Client Response} response Response sent to page 
+ * @returns An array containing three values: 
+ *          1. the built query
+ *          2. the params associated with the built part of the query
+ *          3. update clause (either AND or OR)
+ */
+ function addClauseParam(sqlQuery, sqlParams, condition, userQuery, clause) {
+    sqlQuery = `${sqlQuery} ${clause} ${condition}`;
+    let numOfParams = userQuery.split(',');
+    sqlParams.push(numOfParams[0]);
+    clause = 'OR';
+    for (let i = 1; i < numOfParams.length; i++) {
+        sqlParams.push(numOfParams[i]);
+        sqlQuery = `${sqlQuery} ${clause} ${condition}`;
+    }
+    clause = 'AND';
+    return [sqlQuery, sqlParams, clause]
+}
+/**
+ * Will return true if a capital letter found and false otherwise.
+ * @param {string} userQuery Query that is received from user 
+ * @param {Client Response} response Response that will be sent to user 
+ * @returns True if an error within the user query data has been found
+ *          and false otherwise. 
+ */
+function queryCheck(userQuery, response) {
+    for (let data in userQuery) {
+        let numOfParams = userQuery[data].split(',');
+        // If none of the Params of the certain userQuery data are empty
+        // then send an error response
+        if (numOfParams.indexOf('') !== -1) {
+            response.status(406).type('text').send("Empty item in list or unnecessary comma. Please check search parameters... (e.g. ?police_grid=600,601)");
+            return true;
+        }
+        for (let keyword in data) {
+            // checks to see if any of the letters in the userQuery are capitalized
+            if (data[keyword].toUpperCase() === data[keyword] && data[keyword] !== '_') {
+                response.status(406).type('text').send('Capital letter or number in key... Please reformat to all lower case letters and no numbers (e.g. ?limit=15)')
+                return true;
+            }
+        }
+    }
+    return false;
 }
 
 

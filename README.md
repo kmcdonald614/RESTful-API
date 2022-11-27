@@ -147,3 +147,8 @@ SELECT * FROM Incidents ORDER BY date-time DESC LIMIT 50;
    ```
       "{\"case_number\": \"19245014\", \"date\": \"2019-10-30\",\"time\": \"23:43:19\",\"code\": 700,\"incident\": \"Auto Theft\",\"police_grid\": 95,\"neighborhood_number\": 4,\"block\": \"79X 6 ST E\"}"
    ```
+
+- Example CURL CMD Operation: 
+   ```
+   curl -X DELETE "http://localhost:8000/remove-incident" -H "Content-Type: application/json" -d "{\"case_number\": 5}"
+   ```
