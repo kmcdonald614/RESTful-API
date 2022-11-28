@@ -25,6 +25,22 @@ let db = new sqlite3.Database(db_filename, sqlite3.OPEN_READWRITE, (err) => {
     }
 });
 
+// GET request handler for home page '/' (redirect to desired route)
+app.get('/', (req, res) => {
+    let response = "<html>";
+    response = `${response} <head>`;
+    response = `${response} </head>`;
+    response = `${response} <body>`;
+    response = `${response} <h1>HOMEPAGE</h1>`;
+    response = `${response} <p>St. Paul Criminal Activity Database</p>`;
+    response = `${response} <p>Query on the following:</p>`;
+    response = `${response} <p>/codes?code=1,2&incident_type="Theft"</p>`;
+    response = `${response} <p>/neighborhoods?</p>`;
+    response = `${response} <p>/incidents?</p>`;
+    response = `${response} </body>`;
+    res.status(200).type('html').send(response);
+});
+
 
 // GET request handler for crime codes
 app.get('/codes', (req, res) => {
