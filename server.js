@@ -118,7 +118,7 @@ app.get('/incidents', (req, res) => {
 app.put('/new-incident', (req, res) => {
     let case_No = req.body.case_number;
     if (case_No === undefined) {
-        res.status(406).type('txt').send('Case Number does not exist in current input. Please check and try again...')
+        res.status(404).type('txt').send('Case Number does not exist in current input. Please check and try again...')
         return;
     }
     let keys = [];
@@ -171,7 +171,7 @@ app.put('/new-incident', (req, res) => {
             // Fails if not all attributes from database are present in input received from user
             for (let userInputKey in keys) {
                 if (!neededInputs.includes(keys[userInputKey])) {
-                    res.status(406).type('text').send(`Invalid response... Please make sure you include input data for all required fields. 
+                    res.status(404).type('text').send(`Invalid response... Please make sure you include input data for all required fields. 
                         Required Fields: 
                         case_number
                         date
@@ -192,7 +192,7 @@ app.put('/new-incident', (req, res) => {
             let date = insertQueryParams.pop();
             let time = insertQueryParams.pop();
             if (date == undefined || time == undefined) {
-                res.status(406).type('text').send("Date and/or Time inputs are invalid. Check your inputs and try again.");
+                res.status(404).type('text').send("Date and/or Time inputs are invalid. Check your inputs and try again.");
                 return false; 
             }
             insertQueryParams.push(`${date}T${time}`);
@@ -208,7 +208,7 @@ app.put('/new-incident', (req, res) => {
                     insertQuery += `${neededInputs[key]}`;
                 }
                 if (typeof insertQueryParams[key] !== neededInputsTypes[key]) {
-                    res.status(406).type('text').send(`Invalid response... Please make sure you include the proper input data for all required fields. 
+                    res.status(404).type('text').send(`Invalid response... Please make sure you include the proper input data for all required fields. 
                         Example: 
                         {
                             "case_number": "text"
@@ -247,7 +247,7 @@ app.put('/new-incident', (req, res) => {
 app.delete('/remove-incident', (req, res) => {
     let incident_num = req.body.case_number;
     if (incident_num == undefined) {
-        res.status(406).type('text').send('Invalid response... Please format in JSON (e.g. { "case_number": 5 })');
+        res.status(404).type('text').send('Invalid response... Please format in JSON (e.g. { "case_number": 5 })');
         return;
     }
     incident_num = parseInt(incident_num);
@@ -352,13 +352,13 @@ function queryCheck(userQuery, response) {
         // If none of the Params of the certain userQuery data are empty
         // then send an error response
         if (numOfParams.indexOf('') !== -1) {
-            response.status(406).type('text').send("Empty item in list or unnecessary comma. Please check search parameters... (e.g. ?police_grid=600,601)");
+            response.status(404).type('text').send("Empty item in list or unnecessary comma. Please check search parameters... (e.g. ?police_grid=600,601)");
             return true;
         }
         for (let keyword in data) {
             // checks to see if any of the letters in the userQuery are capitalized
             if (data[keyword].toUpperCase() === data[keyword] && data[keyword] !== '_') {
-                response.status(406).type('text').send('Capital letter or number in key... Please reformat to all lower case letters and no numbers (e.g. ?limit=15)')
+                response.status(404).type('text').send('Capital letter or number in key... Please reformat to all lower case letters and no numbers (e.g. ?limit=15)')
                 return true;
             }
         }
