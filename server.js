@@ -30,14 +30,14 @@ app.get('/', (req, res) => {
     let response = "<html>";
     response = `${response} <head>`;
     response = `${response} </head>`;
-    response = `${response} <body>`;
+    response = `${response} <body style="display:flex; justify-content: center; align-items: center;"><div>`;
     response = `${response} <h1>HOMEPAGE</h1>`;
-    response = `${response} <p>St. Paul Criminal Activity Database</p>`;
-    response = `${response} <p>Query on the following:</p>`;
-    response = `${response} <p>/codes?code=1,2&incident_type="Theft"</p>`;
-    response = `${response} <p>/neighborhoods?</p>`;
-    response = `${response} <p>/incidents?</p>`;
-    response = `${response} </body>`;
+    response = `${response} <h4>St. Paul Criminal Activity Database</h4>`;
+    response = `${response} <h5>Query on the following:</h5>`;
+    response = `${response} <p>/codes?code=1,2</p>`;
+    response = `${response} <p>/neighborhoods?id=11,14</p>`;
+    response = `${response} <p>/incidents?start_date=yyyy-mm-dd&end_date=yyyy-mm-dd&code=110,700&grid=38,65&neighborhood=11,14&limit=15</p>`;
+    response = `${response} </div></body></html>`;
     res.status(200).type('html').send(response);
 });
 
@@ -98,9 +98,9 @@ app.get('/incidents', (req, res) => {
             'code = ?', req.query.code, clause);
         if (query === false) { return; }
     }
-    if (req.query.hasOwnProperty('police_grid')) {
+    if (req.query.hasOwnProperty('grid')) {
         [query, params, clause] = addClauseParam(query, params,
-            'police_grid = ? ', req.query.police_grid, clause);
+            'police_grid = ? ', req.query.grid, clause);
         if (query === false) { return; }
     }
     if (req.query.hasOwnProperty('neighborhood')) {
@@ -355,6 +355,7 @@ function errorMessageFunc(response) {
     clause = 'AND';
     return [sqlQuery, sqlParams, clause]
 }
+
 /**
  * Will return true if a capital letter found and false otherwise.
  * @param {string} userQuery Query that is received from user 
@@ -363,23 +364,63 @@ function errorMessageFunc(response) {
  *          and false otherwise. 
  */
 function queryCheck(userQuery, response) {
+    // loop over every input query key
     for (let data in userQuery) {
-        let numOfParams = userQuery[data].split(',');
+        if (checkEmptyParamData(userQuery, data, response) === true) { return true; }
+        if (checkInvalidQueryFormat(data, response) === true) { return true; }
+        if (checkInvalidKey(data, response) === true) { return true; }
+    }
+    return false;
+}
+
+/**
+ * Checks for invalid Key 
+ * @param {Key-Value Pair data} userQuery Key-Value Pair data that will be checked
+ * @param {number} index Index to which keyword to check 
+ * @param {Response} response Response value from the calling request 
+ */
+function checkInvalidKey(key, response) {
+    let queryKeys = ["code", "id", "start_date", "end_date", "grid", "neighborhood", "limit"];
+    if (queryKeys.includes(key) === false) {
+        response.status(404).type('text').send(`The following query key is not recognized as valid: ${key}`);
+        return true;
+    }
+    return false;
+}
+
+/**
+ * This method checks query format and will reject the query if 
+ * an invalid format is found. 
+ * @param {string} keyword A keyword received from client.
+ * @param {Response} response Response value from the calling request 
+ * @returns True if a error is found and false otherwise. 
+ */
+function checkInvalidQueryFormat(keyword, response) {
+    for (let index in keyword) {
+        // checks to see if any of the letters in the userQuery are capitalized
+        if (keyword[index].toUpperCase() === keyword[index] && keyword[index] !== '_') {
+            response.status(404).type('text').send('Capital letter or number in key... Please reformat to all lower case letters and no numbers (e.g. ?limit=15)')
+            return true;
+        }
+    }
+}
+
+/**
+ * Checks to make sure the parameter data is not empty 
+ * @param {Key-Value Pair data} userQuery Key-Value Pair data that will be checked
+ * @param {number} index Index to which keyword to check 
+ * @param {Response} response Response value from the calling request
+ * @returns True if some data is empty and false otherwise. 
+ */
+function checkEmptyParamData(userQuery, index, response) {
+    let numOfParams = userQuery[index].split(',');
         // If none of the Params of the certain userQuery data are empty
         // then send an error response
         if (numOfParams.indexOf('') !== -1) {
             response.status(404).type('text').send("Empty item in list or unnecessary comma. Please check search parameters... (e.g. ?police_grid=600,601)");
             return true;
         }
-        for (let keyword in data) {
-            // checks to see if any of the letters in the userQuery are capitalized
-            if (data[keyword].toUpperCase() === data[keyword] && data[keyword] !== '_') {
-                response.status(404).type('text').send('Capital letter or number in key... Please reformat to all lower case letters and no numbers (e.g. ?limit=15)')
-                return true;
-            }
-        }
-    }
-    return false;
+        return false; 
 }
 
 
