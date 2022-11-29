@@ -15,6 +15,7 @@ let port = 8000;
 
 app.use(express.json());
 
+
 // Open SQLite3 database (in read-only mode)
 let db = new sqlite3.Database(db_filename, sqlite3.OPEN_READWRITE, (err) => {
     if (err) {
@@ -37,7 +38,13 @@ app.get('/', (req, res) => {
     response = `${response} <p>/codes?code=1,2</p>`;
     response = `${response} <p>/neighborhoods?id=11,14</p>`;
     response = `${response} <p>/incidents?start_date=yyyy-mm-dd&end_date=yyyy-mm-dd&code=110,700&grid=38,65&neighborhood=11,14&limit=15</p>`;
-    response = `${response} </div></body></html>`;
+    response = `${response} <button onclick="speakBTN()">Speak</button></div><script>`;
+    response = `${response} function speakBTN() {`;
+    response = `${response} const utterance = new SpeechSynthesisUtterance("Homepage. These are the queries you can execute on this St. Paul, Minnesota Criminal Reports API.");`;
+    response = `${response} utterance.pitch = 0.1; `;
+    response = `${response} window.speechSynthesis.speak(utterance);}`;
+    response = `${response} </script>`;
+    response = `${response} </body></html>`;
     res.status(200).type('html').send(response);
 });
 
@@ -355,6 +362,7 @@ function errorMessageFunc(response) {
     clause = 'AND';
     return [sqlQuery, sqlParams, clause]
 }
+
 
 /**
  * Will return true if a capital letter found and false otherwise.
