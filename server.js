@@ -5,7 +5,6 @@ let path = require('path');
 // NPM modules
 let express = require('express');
 let sqlite3 = require('sqlite3');
-const { time } = require('console');
 
 
 let db_filename = path.join(__dirname, 'db', 'stpaul_crime.sqlite3');
@@ -72,25 +71,50 @@ app.get('/codes', (req, res) => {
     }
     query = `${query} ORDER BY code ASC`
 
-     // Get data
-     databaseSelect(query, params)
-     .then((data) => {
-         // Send data as response
-         res.status(200).type('json').send(data);
-     })
-     .catch((err) => {
-         // Send database error response
-         console.log(err);
-         errorMessageFunc(res)        
-     })
+    // Get data
+    databaseSelect(query, params)
+        .then((data) => {
+            // Send data as response
+            res.status(200).type('json').send(data);
+        })
+        .catch((err) => {
+            // Send database error response
+            console.log(err);
+            errorMessageFunc(res)
+        })
     // res.status(200).type('json').send({}); // <-- you will need to change this
 });
 
 // GET request handler for neighborhoods
 app.get('/neighborhoods', (req, res) => {
-    console.log(req.query); // query object (key-value pairs after the ? in the url)
 
-    res.status(200).type('json').send({}); // <-- you will need to change this
+    // Check query for capital letter occurence
+    if (queryCheck(req.query, res) === true) { return; }
+
+    console.log(req.query); // query object (key-value pairs after the ? in the url)
+    let query = 'SELECT neighborhood_name, neighborhood_number FROM Neighborhoods';
+    let clause = 'WHERE';
+    let params = [];
+
+    if (req.query.hasOwnProperty('id')) {
+        [query, params, clause] = addClauseParam(query, params,
+            'neighborhood_number = ?', req.query.id, clause);
+        if (query === false) { return; }
+    }
+
+    query = `${query} ORDER BY neighborhood_number ASC`
+
+    // Get data
+    databaseSelect(query, params)
+        .then((data) => {
+            // Send data as response
+            res.status(200).type('json').send(data);
+        })
+        .catch((err) => {
+            // Send database error response
+            console.log(err);
+            errorMessageFunc(res)
+        })
 });
 
 // GET request handler for crime incidents
@@ -128,7 +152,7 @@ app.get('/incidents', (req, res) => {
         if (query === false) { return; }
     }
     query = `${query} ORDER BY date_time DESC`
-    
+
     if (req.query.hasOwnProperty('limit')) {
         query = `${query} LIMIT ?`;
         params.push(req.query.limit);
@@ -145,7 +169,7 @@ app.get('/incidents', (req, res) => {
         .catch((err) => {
             // Send database error response
             console.log(err);
-            errorMessageFunc(res)        
+            errorMessageFunc(res)
         })
 });
 
@@ -182,7 +206,7 @@ app.put('/new-incident', (req, res) => {
         .then((data) => {
             // Is in place to restrict multiple responses being sent
             if (data === false) {
-                return false; 
+                return false;
             }
             let neededInputsTypes = [];
             for (let x in data) {
@@ -202,7 +226,7 @@ app.put('/new-incident', (req, res) => {
                 neededInputs = neededInputs.filter((element) => element !== 'date_time');
                 neededInputsTypes = neededInputsTypes.filter((element) => element !== 'DATETIME');
                 neededInputs.push('time', 'date');
-            } 
+            }
             // Fails if not all attributes from database are present in input received from user
             for (let userInputKey in keys) {
                 if (!neededInputs.includes(keys[userInputKey])) {
@@ -228,7 +252,7 @@ app.put('/new-incident', (req, res) => {
             let time = insertQueryParams.pop();
             if (date == undefined || time == undefined) {
                 res.status(404).type('text').send("Date and/or Time inputs are invalid. Check your inputs and try again.");
-                return false; 
+                return false;
             }
             insertQueryParams.push(`${date}T${time}`);
             neededInputs.pop(); // <-- pop off date
@@ -267,9 +291,9 @@ app.put('/new-incident', (req, res) => {
             if (data !== false) {
                 // data has been successfully inserted
                 res.status(200).type('txt').send('OK...The case has been successfully inserted into the Database.');
-                return; 
+                return;
             } else {
-                return; 
+                return;
             }
         })
         .catch((err) => {
@@ -302,7 +326,7 @@ app.delete('/remove-incident', (req, res) => {
             if (data !== false) {
                 res.status(200).type('txt').send('OK...The case has been deleted.');
             }
-            return false; 
+            return false;
         })
         .catch((err) => {
             console.log(err);
@@ -345,7 +369,7 @@ function databaseRun(query, params) {
  *  GET, or PUT request
  */
 function errorMessageFunc(response) {
-    response.status(404).type('text').send('No data available. Please check your input and try again.');
+    response.status(404).type('text').send('Error. Please check your input and try again.');
 }
 
 /**
@@ -362,7 +386,7 @@ function errorMessageFunc(response) {
  *          2. the params associated with the built part of the query
  *          3. update clause (either AND or OR)
  */
- function addClauseParam(sqlQuery, sqlParams, condition, userQuery, clause) {
+function addClauseParam(sqlQuery, sqlParams, condition, userQuery, clause) {
     sqlQuery = `${sqlQuery} ${clause} ${condition}`;
     let numOfParams = userQuery.split(',');
     sqlParams.push(numOfParams[0]);
@@ -434,13 +458,13 @@ function checkInvalidQueryFormat(keyword, response) {
  */
 function checkEmptyParamData(userQuery, index, response) {
     let numOfParams = userQuery[index].split(',');
-        // If none of the Params of the certain userQuery data are empty
-        // then send an error response
-        if (numOfParams.indexOf('') !== -1) {
-            response.status(404).type('text').send("Empty item in list or unnecessary comma. Please check search parameters... (e.g. ?police_grid=600,601)");
-            return true;
-        }
-        return false; 
+    // If none of the Params of the certain userQuery data are empty
+    // then send an error response
+    if (numOfParams.indexOf('') !== -1) {
+        response.status(404).type('text').send("Empty item in list or unnecessary comma. Please check search parameters... (e.g. ?police_grid=600,601)");
+        return true;
+    }
+    return false;
 }
 
 
