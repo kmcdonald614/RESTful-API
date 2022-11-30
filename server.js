@@ -64,11 +64,7 @@ app.get('/codes', (req, res) => {
             'code = ?', req.query.code, clause);
         if (query === false) { return; }
     }
-    if (req.query.hasOwnProperty('incident_type')) {
-        [query, params, clause] = addClauseParam(query, params,
-            'incident_type = ?', req.query.incident_num, clause);
-        if (query === false) { return; }
-    }
+    
     query = `${query} ORDER BY code ASC`
 
     // Get data
