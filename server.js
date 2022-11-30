@@ -71,6 +71,18 @@ app.get('/codes', (req, res) => {
         if (query === false) { return; }
     }
     query = `${query} ORDER BY code ASC`
+
+     // Get data
+     databaseSelect(query, params)
+     .then((data) => {
+         // Send data as response
+         res.status(200).type('json').send(data);
+     })
+     .catch((err) => {
+         // Send database error response
+         console.log(err);
+         errorMessageFunc(res)        
+     })
     // res.status(200).type('json').send({}); // <-- you will need to change this
 });
 
