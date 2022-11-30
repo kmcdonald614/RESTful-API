@@ -25,7 +25,7 @@
     - [x] Ensure all used modules downloaded via NPM are in the dependencies object
     - [x] Ensure that the "node_modules" folder is not included on your GitHub repository
 - Add the following routes for your API 
-    - [ ] GET /codes
+    - [X] GET /codes
        - Return JSON array with list of codes and their corresponding incident type (ordered by   
          code number)
        - Example: 
@@ -43,7 +43,7 @@
                ...
               ]
        ```
-    - [ ] GET /neighorhoods
+    - [X] GET /neighorhoods
        - Return JSON object with list of neightborhood ids and their corresponding neightborhood 
          name (ordered by id)
        - Example: 
@@ -117,11 +117,11 @@
        - Data fields: case_number
        NOTE: response should reject (status 500) if the case number does not exist in the database
 ### Implement Following to features to earn a B or A
-- [ ] Add the following query option for GET /codes (2pts)
+- [X] Add the following query option for GET /codes (2pts)
     - code - comma separated list of codes to include in result. 
     ``` ?code=110, 700```
     - By default all codes should be included
-- [ ] Add the following query options for GET /neighborhood (2pts)
+- [X] Add the following query options for GET /neighborhood (2pts)
     - id - comma separated list of neighborhood numbers to include in result 
     ``` ?id=11, 14```
     - By default all neighborhoods should be included
