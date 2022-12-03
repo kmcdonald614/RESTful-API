@@ -23,8 +23,9 @@
         - [ ] Draw markers on the map for each neighborhood
             - [ ] Marker should have popup to show the number of crimes committed in that neighborhood
     - [ ] New Incident upload form
-        - [ ] Create a user input form for users to add a new crime incident to the database (i.e. submit the PUT request)
-        - [ ] Ensure all fields are filled out before submitting request, otherwise show some error message
+        - [X] Create a user input form for users to add a new crime incident to the database (i.e. submit the PUT request)
+        - [X] Ensure all fields are filled out before submitting request, otherwise show some error message
+        - [ ] Set up API PUT call so data makes it to the database
     - [ ] "About the Project" page
         - [ ] Short bio about each team member (including a photo)
         Description of the tools (frameworks, APIs, etc.) you used to create the application
