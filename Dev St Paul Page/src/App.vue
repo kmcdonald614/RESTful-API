@@ -10,6 +10,7 @@ export default {
             codes: [],
             neighborhoods: [],
             incidents: [],
+            searchData: "",
             leaflet: {
                 map: null,
                 center: {
@@ -98,6 +99,18 @@ export default {
             // console.log(data)).catch((err) => console.log(err));
             // this.getJSON('http://localhost:8000/codes').then((data) => console.log(data))
             // .catch((err) => console.log(err))
+        }, 
+        submitSearch() {
+            // This method will handle the following: 
+            /*
+            take the data from searchData and use it to determine 
+            address, lat/lon or other information that will allow us to 
+            update the map
+
+            This method will also retrieve the most recent 1000 elements 
+            and put them into a table that will be generated under the map
+            */
+            console.log(this.searchData)
         }
     },
     mounted() {
@@ -149,6 +162,13 @@ export default {
         <div class="grid-container">
             <div class="grid-x">
                 <div class="large-1 medium-1 small-0 cell buffer"></div>
+                <div class="large-10 medium-10 small-12 cell search_format"> 
+                        <input v-model="searchData" type="text" id="textbox_format" placeholder="e.g. 2115 Summit Avenue" required>
+                        <button type="button" class="button" @click="submitSearch">Search</button>
+                </div>
+                <div class="large-1 medium-1 small-0 cell buffer"></div>
+                <div class="large-12 medium-12 small-12 cell" style="height: 5px;"></div>
+                <div class="large-1 medium-1 small-0 cell buffer"></div>
                 <div id="leafletmap" class="large-10 medium-10 small-12 cell"></div>
                 <div class="large-1 medium-1 small-0 cell buffer"></div>
             </div>
@@ -164,11 +184,16 @@ export default {
 </template>
 
 <style>
+
 .main_container {
     background: radial-gradient(at bottom right, #d5dbd8 0, #d5dbd8 17.25px, rgba(213, 219, 216, 0.2) 17.25px, rgba(213, 219, 216, 0.2) 34.5px, rgba(213, 219, 216, 0.75) 34.5px, rgba(213, 219, 216, 0.75) 51.75px, rgba(213, 219, 216, 0.25) 51.75px, rgba(213, 219, 216, 0.25) 69px, rgba(213, 219, 216, 0.3) 69px, rgba(213, 219, 216, 0.3) 86.25px, rgba(213, 219, 216, 0.75) 86.25px, rgba(213, 219, 216, 0.75) 103.5px, rgba(213, 219, 216, 0.2) 103.5px, rgba(213, 219, 216, 0.2) 120.75px, transparent 120.75px, transparent 138px), radial-gradient(at top left, transparent 0, transparent 17.25px, rgba(213, 219, 216, 0.2) 17.25px, rgba(213, 219, 216, 0.2) 34.5px, rgba(213, 219, 216, 0.75) 34.5px, rgba(213, 219, 216, 0.75) 51.75px, rgba(213, 219, 216, 0.3) 51.75px, rgba(213, 219, 216, 0.3) 69px, rgba(213, 219, 216, 0.25) 69px, rgba(213, 219, 216, 0.25) 86.25px, rgba(213, 219, 216, 0.75) 86.25px, rgba(213, 219, 216, 0.75) 103.5px, rgba(213, 219, 216, 0.2) 103.5px, rgba(213, 219, 216, 0.2) 120.75px, #d5dbd8 120.75px, #d5dbd8 138px, transparent 138px, transparent 345px);
     background-blend-mode: multiply;
     background-size: 138px 138px, 138px 138px;
     background-color: #586ba4;
+}
+
+.search_format {
+    display:flex;
 }
 
 img {

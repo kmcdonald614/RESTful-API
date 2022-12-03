@@ -4,11 +4,12 @@
 
  - [ ] Show a map using the Leaflet API
 
-    - [ ] Pan and zoom available with mouse click-and-drag and scroll wheel interaction
+    - [X] Pan and zoom available with mouse click-and-drag and scroll wheel interaction
     - [X] Limit pan and zoom so map does not display regions outside of St. Paul
         HINT: zoom levels 11-18 are good
         NOTE: this is already the default setup in the starter code!
-    - [ ] Have an input box and 'Go' button for a user to type a location (lat/  long coordinates, address, etc.)
+    - [X] Have an input box and 'Go' button for a user to type a location (lat/  long coordinates, address, etc.)
+    - [ ] Implement the method that will use the searchbox to update the map
     - [ ] Map should update when location is entered and 'Go' button pressed
     - [ ] Input box text should update with new location (lat/long coordinates or address) when map is panned/zoomed
         - NOTE: updating once pan/zoom has ended is recommended - constantly updating this during a pan will overwhelm the system

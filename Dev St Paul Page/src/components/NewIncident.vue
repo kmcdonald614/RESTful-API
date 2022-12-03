@@ -60,7 +60,7 @@ export default {
                     <h1> New Incident Form: </h1>
                     <br>
                     <label for="case_number">Case Number</label>
-                    <input v-model="case_number" type="number" id="case_number" placeholder="e.g. 45623188" required><br>
+                    <input v-model="case_number" pattern="[0-9]*" type="number" id="case_number" placeholder="e.g. 45623188" required><br>
                     <label for="date">Date</label>
                     <input v-model="date" type="date" id="date" required><br>
                     <label for="time">Time</label>
@@ -77,7 +77,8 @@ export default {
                     <input v-model="block" type="text" id="block" placeholder="e.g. 2115 Summit Avenue " required><br>
                     <p v-if=this.Error>{{Error}}</p>
                     <div id="containerSubmit">
-                        <input type="submit" id="submitBtn" v-on:click="sendDataToParent">     
+                        <input type="submit" id="submitBtn" v-on:click="sendDataToParent"> 
+                        <input type="submit" id="submitBtnFake">    
                     </div>
                 </form><br>
                 <!-- <p>{{case_number}}, {{date}}, {{time}}, {{code}}, {{incident}},
@@ -96,11 +97,21 @@ h1 {
     margin-top: -63px;
     background-color: white;
     width: fit-content;
+    padding: 8px;
+    border-radius: 10px;
+    border: 1px black solid;
+}
+
+form:invalid input[id=submitBtnFake] {
+    opacity: 0.4;
+    background-color: #696969;
+}
+form:valid input[id=submitBtnFake] {
+    display: none;
 }
 
 form:invalid input[id=submitBtn] {
-    opacity: 0.4;
-    background-color: #696969;
+    display: none;
 }
 label {
     margin-top: -30px;
@@ -120,7 +131,7 @@ form {
     align-items: center;
 }
 
-#submitBtn {
+#submitBtn, #submitBtnFake {
     width: 12rem;
     height: 2.5rem;
     border-radius: 2rem;
