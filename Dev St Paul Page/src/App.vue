@@ -1,7 +1,7 @@
 <script>
 import $ from 'jquery'
 import NewIncident from './components/NewIncident.vue';
-import About from './components/about.vue'
+import About_Page from './components/About.vue'
 
 export default {
     data() {
@@ -80,10 +80,24 @@ export default {
                         resolve(response);
                     },
                     error: (status, message) => {
+                        console.log(status, message)
                         reject({ status: status.status, message: status.statusText });
                     }
                 });
             });
+        }, 
+        insertNewIncident(data) {
+            // API Database PUT Call will happen here where I will create a URL
+            // created from the elements in the data
+            // use uploadJSON
+            // method = PUT
+            // url --> https://localhost:8000/new-incident
+            console.log(data)
+            let url = 'Access-Control-Allow-Orgin: http://localhost:8000/new-incident'
+            // this.uploadJSON('PUT', url, data).this((data) => 
+            // console.log(data)).catch((err) => console.log(err));
+            // this.getJSON('http://localhost:8000/codes').then((data) => console.log(data))
+            // .catch((err) => console.log(err))
         }
     },
     mounted() {
@@ -106,36 +120,65 @@ export default {
         });
     },
     components: {
-        About, 
+        About_Page, 
         NewIncident
     }
 }
 </script>
 
 <template>
-    <div class="grid-container">
-        <div class="grid-x grid-padding-x">
-            <p :class="'cell small-4 ' + ((view === 'map') ? 'selected' : 'unselected')" @click="viewMap">Map</p>
-            <p :class="'cell small-4 ' + ((view === 'new_incident') ? 'selected' : 'unselected')" @click="viewNewIncident">New Incident</p>
-            <p :class="'cell small-4 ' + ((view === 'about') ? 'selected' : 'unselected')" @click="viewAbout">About</p>
-        </div>
-    </div>
+    <div class="main_container">
+    <div class="top-bar">
+  <div class="top-bar-left">
+    <ul class="menu" data-dropdown-menu>
+      <li class="menu-text"><img src="../images/police-badge.png" alt=""> St. Paul, Minnesota Crime Reports</li>
+    </ul>
+  </div>
+  <div class="top-bar-right">
+    <ul class="menu">
+      <!-- <li><input type="search" placeholder="Search"></li>
+      <li><button type="button" class="button">Search</button></li> -->
+      <li><p :class="'cell small-4 ' + ((view === 'map') ? 'selected' : 'unselected')" @click="viewMap">Map</p></li>
+        <li><p :class="'cell small-4 ' + ((view === 'new_incident') ? 'selected' : 'unselected')" @click="viewNewIncident">New Incident</p></li>
+        <li><p :class="'cell small-4 ' + ((view === 'about') ? 'selected' : 'unselected')" @click="viewAbout">About</p></li>
+    </ul>
+  </div>
+</div>
+<br>
     <div v-show="view === 'map'">
         <div class="grid-container">
-            <div class="grid-x grid-padding-x">
-                <div id="leafletmap" class="cell auto"></div>
+            <div class="grid-x">
+                <div class="large-1 medium-1 small-0 cell buffer"></div>
+                <div id="leafletmap" class="large-10 medium-10 small-12 cell"></div>
+                <div class="large-1 medium-1 small-0 cell buffer"></div>
             </div>
         </div>
     </div>
     <div v-if="view === 'new_incident'">
-        <NewIncident></NewIncident>
+        <NewIncident @incident_data_insert="insertNewIncident"/>
     </div>
     <div v-if="view === 'about'">
-        <About></About>
+        <About_Page/>
     </div>
+</div>
 </template>
 
 <style>
+.main_container {
+    background: radial-gradient(at bottom right, #d5dbd8 0, #d5dbd8 17.25px, rgba(213, 219, 216, 0.2) 17.25px, rgba(213, 219, 216, 0.2) 34.5px, rgba(213, 219, 216, 0.75) 34.5px, rgba(213, 219, 216, 0.75) 51.75px, rgba(213, 219, 216, 0.25) 51.75px, rgba(213, 219, 216, 0.25) 69px, rgba(213, 219, 216, 0.3) 69px, rgba(213, 219, 216, 0.3) 86.25px, rgba(213, 219, 216, 0.75) 86.25px, rgba(213, 219, 216, 0.75) 103.5px, rgba(213, 219, 216, 0.2) 103.5px, rgba(213, 219, 216, 0.2) 120.75px, transparent 120.75px, transparent 138px), radial-gradient(at top left, transparent 0, transparent 17.25px, rgba(213, 219, 216, 0.2) 17.25px, rgba(213, 219, 216, 0.2) 34.5px, rgba(213, 219, 216, 0.75) 34.5px, rgba(213, 219, 216, 0.75) 51.75px, rgba(213, 219, 216, 0.3) 51.75px, rgba(213, 219, 216, 0.3) 69px, rgba(213, 219, 216, 0.25) 69px, rgba(213, 219, 216, 0.25) 86.25px, rgba(213, 219, 216, 0.75) 86.25px, rgba(213, 219, 216, 0.75) 103.5px, rgba(213, 219, 216, 0.2) 103.5px, rgba(213, 219, 216, 0.2) 120.75px, #d5dbd8 120.75px, #d5dbd8 138px, transparent 138px, transparent 345px);
+    background-blend-mode: multiply;
+    background-size: 138px 138px, 138px 138px;
+    background-color: #586ba4;
+}
+
+img {
+    height: 20px;
+    margin: auto; 
+}
+
+.buffer {
+    /* background-color: red; */
+}
 #leafletmap {
     height: 500px;
 }
@@ -143,15 +186,21 @@ export default {
 .selected {
     background-color: rgb(10, 100, 126);
     color: white;
-    border: solid 1px white;
+    /* border: solid 1px white; */
     text-align: center;
     cursor: pointer;
+    padding-left: 2rem; 
+    padding-right: 2rem;
+    margin: auto;
 }
 .unselected {
     background-color: rgb(200, 200, 200);
     color: black;
-    border: solid 1px white;
+    /* border: solid 1px white; */
     text-align: center;
     cursor: pointer;
+    padding-left: 2rem; 
+    padding-right: 2rem;
+    margin: auto;
 }
 </style>

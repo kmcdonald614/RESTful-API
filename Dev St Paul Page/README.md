@@ -32,6 +32,7 @@
         - [ ] Video demo of the application (2 - 4 minutes) - include voiceover
             Can natively embed or upload to YouTube and embed
         - [ ] Six interesting findings that you discovered using your application
+- [] Fill out dependencies in Package.json
 
 ## Implement additional features to earn a B or A (5 pts each)
 
@@ -57,5 +58,3 @@
     - [ ] Create a popup with date, time, incident, and delete button
     Note addresses are slightly obscured (e.g. '98X UNIVERSITY AV W' or 'THOMAS AV & VICTORIA')
         - [ ] For addresses with an 'X' in the address number, you can replace it with a '0' (e.g. '90X UNIVERSITY AV W' would become '980 UNIVERSITY AV W'). Careful not to replace all X's though - there could be an X in the street name!
-
-- [ ] Need to develop a algorithm to convert from Standard time to Military Time -- For the Client Data Upload
