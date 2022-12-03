@@ -5,7 +5,7 @@
  - [ ] Show a map using the Leaflet API
 
     - [ ] Pan and zoom available with mouse click-and-drag and scroll wheel interaction
-    - [ ] Limit pan and zoom so map does not display regions outside of St. Paul
+    - [X] Limit pan and zoom so map does not display regions outside of St. Paul
         HINT: zoom levels 11-18 are good
         NOTE: this is already the default setup in the starter code!
     - [ ] Have an input box and 'Go' button for a user to type a location (lat/  long coordinates, address, etc.)
@@ -57,3 +57,4 @@
     Note addresses are slightly obscured (e.g. '98X UNIVERSITY AV W' or 'THOMAS AV & VICTORIA')
         - [ ] For addresses with an 'X' in the address number, you can replace it with a '0' (e.g. '90X UNIVERSITY AV W' would become '980 UNIVERSITY AV W'). Careful not to replace all X's though - there could be an X in the street name!
 
+- [ ] Need to develop a algorithm to convert from Standard time to Military Time -- For the Client Data Upload

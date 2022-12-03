@@ -1,0 +1,82 @@
+<script>
+export default {
+    // get data from inputs and send to main file to be sent to api
+
+}
+</script>
+
+<template>
+    <!-- Replace this with your actual form: can be done here or by making a new component -->
+    <div class="grid-container">
+        <div class="grid-x grid-padding-x">
+            <div class="large-2 medium-1 small-0 cell"></div>
+            <div class="large-8 medium-10 small-12 cell">
+                <br>
+                <form>
+                    <h1> New Incident Form: </h1>
+                    <br>
+                    <label for="case_number">Case Number</label>
+                    <input type="number" id="case_number" placeholder="e.g. 45623188" required><br>
+                    <label for="date">Date</label>
+                    <input type="date" id="date" required><br>
+                    <label for="time">Time</label>
+                    <input type="time" id="time" step="1" required><br>
+                    <label for="code">Code</label>
+                    <input type="number" id="code" placeholder="e.g. 4" required><br>
+                    <label for="incident">Incident</label>
+                    <input type="text" id="incident" placeholder="e.g. Robbery" required><br>
+                    <label for="police_grid">Police Grid</label>
+                    <input type="number" id="police_grid" placeholder="e.g. 5" required><br>
+                    <label for="neighborhood_number">Neighborhood Number</label>
+                    <input type="number" id="neighborhood_number" placeholder="e.g. 6" required><br>
+                    <label for="block">Block</label>
+                    <input type="text" id="block" placeholder="e.g. 2115 Summit Avenue " required><br>
+                    <div id="containerSubmit">
+                        <input type="submit" id="submitBtn"> 
+                    </div>
+                </form><br>
+            </div>
+            <div class="large-2 medium-1 small-0 cell"></div>
+
+        </div>
+    </div>
+</template>
+
+<style>
+h1 {
+    font-size: 1.2rem;
+    margin-top: -63px;
+    background-color: white;
+    width: fit-content;
+}
+
+form:invalid input[type="submit"] {
+    opacity: 0.4;
+    background-color: #696969;
+}
+label {
+    margin-top: -30px;
+}
+
+form {
+    border: 1px solid black; 
+    padding: 50px;
+    margin-bottom: 30px;
+}
+
+#containerSubmit {
+    display: flex; 
+    justify-content: center;
+    align-items: center;
+}
+
+#submitBtn {
+    width: 12rem;
+    height: 2.5rem;
+    border-radius: 2rem;
+    font-size: 1.3rem;
+    font-style:normal;
+    font-weight: 100;
+}
+
+</style>
