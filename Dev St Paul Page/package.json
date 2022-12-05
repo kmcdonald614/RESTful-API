@@ -26,6 +26,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@splidejs/vue-splide": "^0.6.12",
     "jquery": "^3.6.1",
     "vue": "^3.2.45"
   },

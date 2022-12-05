@@ -18,6 +18,7 @@
 - [ ] Retrieve data from your St. Paul Crime API
     - [ ] By default, include 1,000 most recent crimes in the database
     - [ ] Populate a table with one row per crime (use neighborhood_name rather than neighborhood_number, and incident_type rather than code)
+    - [ ] Update neighborhood tags display based on current location that is seen (use hint above)
         - [ ] Table should be ordered with most recent on top 
         - [ ] Only show crimes that occurred in neighborhoods visible on the map
             - HINT: get lat/long coordinates for the NW and SE corners of the map to use as the min/max lat/long coordinates
