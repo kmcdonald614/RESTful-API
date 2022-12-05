@@ -9,7 +9,8 @@ export default {
             view: "map",
             codes: [],
             neighborhoods: [],
-            incidents: [],
+            incidents: [1,2,3,4,5],
+            headerData: [1,2,3],
             searchData: "",
             leaflet: {
                 map: null,
@@ -87,23 +88,6 @@ export default {
                 });
             });
         }, 
-        insertNewIncident(data) {
-            // API Database PUT Call will happen here where I will create a URL
-            // created from the elements in the data
-            // use uploadJSON
-            // method = PUT
-            // url --> https://localhost:8000/new-incident
-            let url = 'http://localhost:8000/new-incident'
-            //console.log(data)
-            //console.log(url)
-            
-            // this.uploadJSON('PUT', url, data).this((data) => 
-            // console.log(data)).catch((err) => console.log(err));
-            
-            
-            // this.getJSON('http://localhost:8000/codes').then((data) => console.log(data))
-            // .catch((err) => console.log(err))
-        }, 
         submitSearch() {
             // This method will handle the following: 
             /*
@@ -119,9 +103,19 @@ export default {
         // '&format=json&limit=50&accept-language=en&countrycodes='US'
 
             this.getJSON(`https://nominatim.openstreetmap.org/search?q='${this.searchData}, St. Paul, Minnesota'&format=json&limit=50&accept-language=en&countrycodes=us`)
-            .then((data) => console.log(data)).catch((err) => console.log(err))
+            .then((data) => {
+                console.log(data[0])
+                let message = 'address date time incident and delete button';
+                L.marker([data[0].lat, data[0].lon]).addTo(this.leaflet.map)//.bindPopup(message);
+                this.leaflet.map.setView([data[0].lat, data[0].lon], 16);
+            //     value.marker = value.marker.bindPopup(`${value.name}`);
+            })
+            .catch((err) => console.log(err))
             console.log(this.searchData)
         }
+    },
+    created() {
+                   
     },
     mounted() {
         this.leaflet.map = L.map("leafletmap").setView([this.leaflet.center.lat, this.leaflet.center.lng], this.leaflet.zoom);
@@ -140,12 +134,17 @@ export default {
                 // console.log(value)
             });
             $(this.leaflet.neighborhood_markers).each((key, value) =>{
+                // in order to do the value.name we need to make a call to the monimanmi API
+                // don't do hard code
                 value.marker = L.marker(value.location).addTo(district_boundary);
                 value.marker = value.marker.bindPopup(`${value.name}`);
             }) 
         }).catch((error) => {
             console.log("Error:", error);
         });
+
+        // retrieve the 1000 most recent criminal acts here
+        // also populate table header array here
     },
     components: {
         About_Page, 
@@ -187,11 +186,30 @@ export default {
                 <div id="leafletmap" class="large-10 medium-10 small-12 cell"></div>
                 <div class="large-1 medium-1 small-0 cell buffer"></div>
             </div>
+            <div class="grid-x grid-padding-x" style="padding: 15px;">
+                <div class="large-12 medium-12 small-12 cell table_format" >
+                    <div class="table_header_format">
+                        This is the table header
+                    </div>
+                    <div class="table-format">
+                        <table>
+                            <tr>
+                                <th v-for="elements in headerData">head</th>
+                            </tr>
+                            <tr v-for="element in incidents">
+                                <td>name</td>
+                                <td>grid</td>
+                                <td>neighborhood</td>
+                            </tr>
+                        </table>
+                    </div>
+                </div>
+            </div>
         </div>
+
     </div>
     <div v-if="view === 'new_incident'">
         <NewIncident/>
-         <!-- @incident_data_insert="insertNewIncident" -->
     </div>
     <div v-if="view === 'about'">
         <About_Page/>
@@ -206,6 +224,18 @@ export default {
     background-blend-mode: multiply;
     background-size: 138px 138px, 138px 138px;
     background-color: #586ba4;
+}
+
+td, th {
+    border: 1px black solid;
+}
+
+.table_format {
+    background-color: rgb(200,200,200);
+}
+
+.table_header_format {
+    text-align: center; 
 }
 
 .search_format {
