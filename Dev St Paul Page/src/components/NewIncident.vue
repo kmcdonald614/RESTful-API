@@ -1,4 +1,5 @@
 <script>
+import $ from 'jquery'
 export default {
     // get data from inputs and send to main file to be sent to api
     data() {
@@ -15,11 +16,30 @@ export default {
         }
     }, 
     methods: {
+        uploadJSON(method, url, data) {
+            return new Promise((resolve, reject) => {
+                $.ajax({
+                    type: method,
+                    url: url,
+                    contentType: "application/json; charset=utf-8",
+                    data: JSON.stringify(data),
+                    dataType: "text",
+                    success: (response) => {
+                        console.log(response)
+                        resolve(response);
+                    },
+                    error: (status, message) => {
+                        console.log(status, message)
+                        reject({ status: status.status, message: status.statusText });
+                    }
+                });
+            });
+        },
         sendDataToParent() {
             // console.log(this.case_number, this.date, this.time, 
             // this.code, this.incident, this.police_grid, this.neighborhood_number, this.block)           
             let [case_number, date, time, code, incident, police_grid, neighborhood_number, block] =
-            [this.case_number, this.date, this.time, this.code, this.incident, this.police_grid, this.neighborhood_number, 
+            [`${this.case_number}`, this.date, this.time, this.code, this.incident, this.police_grid, this.neighborhood_number, 
             this.block];
 
             let insert_Object = {
@@ -32,17 +52,24 @@ export default {
                 neighborhood_number, 
                 block
             }
+            console.log('clicked')
+            // this.$emit('incident_data_insert', insert_Object); 
+
+            let url = 'http://localhost:8000/new-incident'
+            console.log(url)
             
-            this.$emit('incident_data_insert', insert_Object); 
+            this.uploadJSON("PUT", url, insert_Object)
+            .then((data) => console.log(data))
+            .catch((err) => console.log(err))
             
-            this.case_number =  "", 
-            this.date =  "", 
-            this.time =  "", 
-            this.code =  0, 
-            this.incident =  "", 
-            this.police_grid =  0, 
-            this.neighborhood_number =  0, 
-            this.block =  ""
+            // this.case_number =  "", 
+            // this.date =  "", 
+            // this.time =  "", 
+            // this.code =  0, 
+            // this.incident =  "", 
+            // this.police_grid =  0, 
+            // this.neighborhood_number =  0, 
+            // this.block =  ""
         }
     }
 }
@@ -75,9 +102,9 @@ export default {
                     <input v-model="neighborhood_number" type="number" id="neighborhood_number" placeholder="e.g. 6" required><br>
                     <label for="block">Block</label>
                     <input v-model="block" type="text" id="block" placeholder="e.g. 2115 Summit Avenue " required><br>
-                    <p v-if=this.Error>{{Error}}</p>
+                    <!-- <p v-if=this.Error>{{Error}}</p> -->
                     <div id="containerSubmit">
-                        <input type="submit" id="submitBtn" v-on:click="sendDataToParent"> 
+                        <input type="submit" id="submitBtn" @click="sendDataToParent"> 
                         <input type="submit" id="submitBtnFake">    
                     </div>
                 </form><br>

@@ -3,22 +3,22 @@
   "version": "1.0.0",
   "description": "RESTful Web Server and Single Page Application",
   "author": {
-    "name": "",
-    "email": ""
+    "name": "Tucker Johnson",
+    "email": "john5653@stthomas.edu"
   },
   "contributors": [
     {
-      "name": "",
-      "email": ""
+      "name": "Kevin McDonald",
+      "email": "mcdo7322@stthomas.edu"
     },
     {
-      "name": "",
-      "email": ""
+      "name": "Marcus Haldane",
+      "email": "hald8506@stthomas.edu"
     }
   ],
   "repository": {
     "type": "git",
-    "url": ""
+    "url": "https://github.com/Tuck1297/RESTful-API.git"
   },
   "scripts": {
     "dev": "vite",

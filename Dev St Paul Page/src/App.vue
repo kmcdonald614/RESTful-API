@@ -1,6 +1,6 @@
 <script>
 import $ from 'jquery'
-import NewIncident from './components/NewIncident.vue';
+import NewIncident from './components/NewIncident.vue'
 import About_Page from './components/About.vue'
 
 export default {
@@ -24,23 +24,23 @@ export default {
                     se: { lat: 44.883658, lng: -92.993787 }
                 },
                 neighborhood_markers: [
-                    { location: [44.942068, -93.020521], marker: null },
-                    { location: [44.977413, -93.025156], marker: null },
-                    { location: [44.931244, -93.079578], marker: null },
-                    { location: [44.956192, -93.060189], marker: null },
-                    { location: [44.978883, -93.068163], marker: null },
-                    { location: [44.975766, -93.113887], marker: null },
-                    { location: [44.959639, -93.121271], marker: null },
-                    { location: [44.9477, -93.128505], marker: null },
-                    { location: [44.930276, -93.119911], marker: null },
-                    { location: [44.982752, -93.14791], marker: null },
-                    { location: [44.963631, -93.167548], marker: null },
-                    { location: [44.973971, -93.197965], marker: null },
-                    { location: [44.949043, -93.178261], marker: null },
-                    { location: [44.934848, -93.176736], marker: null },
-                    { location: [44.913106, -93.170779], marker: null },
-                    { location: [44.937705, -93.136997], marker: null },
-                    { location: [44.949203, -93.093739], marker: null }
+                    { location: [44.942068, -93.020521], marker: null, name: "Eastview-Conway-Battle Creek-Highwood Hills" },
+                    { location: [44.977413, -93.025156], marker: null, name: "The Greater East Side" },
+                    { location: [44.931244, -93.079578], marker: null, name: "West Side Community Organization" },
+                    { location: [44.956192, -93.060189], marker: null, name: "Dayton's Bluff" },
+                    { location: [44.978883, -93.068163], marker: null, name: "Payne-Phalen" },
+                    { location: [44.975766, -93.113887], marker: null, name: "North End" },
+                    { location: [44.959639, -93.121271], marker: null, name: "Thomas-Dale/Frogtown" },
+                    { location: [44.9477, -93.128505], marker: null, name: "Summit-University" },
+                    { location: [44.930276, -93.119911], marker: null, name: "Fort Road/West Seventh Federation" },
+                    { location: [44.982752, -93.14791], marker: null, name: "Como" },
+                    { location: [44.963631, -93.167548], marker: null, name: "Hamline-Midway" },
+                    { location: [44.973971, -93.197965], marker: null, name: "St. Anthony Park" },
+                    { location: [44.949043, -93.178261], marker: null, name: "Union Park" },
+                    { location: [44.934848, -93.176736], marker: null, name: "Macalester-Groveland" },
+                    { location: [44.913106, -93.170779], marker: null, name: "Highland" },
+                    { location: [44.937705, -93.136997], marker: null, name: "Summit Hill Association" },
+                    { location: [44.949203, -93.093739], marker: null, name: "CapitolRiver Council" }
                 ]
             }
         };
@@ -93,10 +93,14 @@ export default {
             // use uploadJSON
             // method = PUT
             // url --> https://localhost:8000/new-incident
-            console.log(data)
-            let url = 'Access-Control-Allow-Orgin: http://localhost:8000/new-incident'
+            let url = 'http://localhost:8000/new-incident'
+            //console.log(data)
+            //console.log(url)
+            
             // this.uploadJSON('PUT', url, data).this((data) => 
             // console.log(data)).catch((err) => console.log(err));
+            
+            
             // this.getJSON('http://localhost:8000/codes').then((data) => console.log(data))
             // .catch((err) => console.log(err))
         }, 
@@ -110,6 +114,12 @@ export default {
             This method will also retrieve the most recent 1000 elements 
             and put them into a table that will be generated under the map
             */
+
+            // https://nominatim.openstreetmap.org/search?q='St. Paul'
+        // '&format=json&limit=50&accept-language=en&countrycodes='US'
+
+            this.getJSON(`https://nominatim.openstreetmap.org/search?q='${this.searchData}, St. Paul, Minnesota'&format=json&limit=50&accept-language=en&countrycodes=us`)
+            .then((data) => console.log(data)).catch((err) => console.log(err))
             console.log(this.searchData)
         }
     },
@@ -127,7 +137,12 @@ export default {
             // St. Paul GeoJSON
             $(result.features).each((key, value) => {
                 district_boundary.addData(value);
+                // console.log(value)
             });
+            $(this.leaflet.neighborhood_markers).each((key, value) =>{
+                value.marker = L.marker(value.location).addTo(district_boundary);
+                value.marker = value.marker.bindPopup(`${value.name}`);
+            }) 
         }).catch((error) => {
             console.log("Error:", error);
         });
@@ -175,7 +190,8 @@ export default {
         </div>
     </div>
     <div v-if="view === 'new_incident'">
-        <NewIncident @incident_data_insert="insertNewIncident"/>
+        <NewIncident/>
+         <!-- @incident_data_insert="insertNewIncident" -->
     </div>
     <div v-if="view === 'about'">
         <About_Page/>

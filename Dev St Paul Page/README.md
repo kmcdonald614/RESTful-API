@@ -23,17 +23,17 @@
             - HINT: get lat/long coordinates for the NW and SE corners of the map to use as the min/max lat/long coordinates
         - [ ] Draw markers on the map for each neighborhood
             - [ ] Marker should have popup to show the number of crimes committed in that neighborhood
-    - [ ] New Incident upload form
+    - [X] New Incident upload form
         - [X] Create a user input form for users to add a new crime incident to the database (i.e. submit the PUT request)
         - [X] Ensure all fields are filled out before submitting request, otherwise show some error message
-        - [ ] Set up API PUT call so data makes it to the database
+        - [X] Set up API PUT call so data makes it to the database
     - [ ] "About the Project" page
         - [ ] Short bio about each team member (including a photo)
         Description of the tools (frameworks, APIs, etc.) you used to create the application
         - [ ] Video demo of the application (2 - 4 minutes) - include voiceover
             Can natively embed or upload to YouTube and embed
         - [ ] Six interesting findings that you discovered using your application
-- [] Fill out dependencies in Package.json
+- [ ] Fill out dependencies in Package.json
 
 ## Implement additional features to earn a B or A (5 pts each)
 
@@ -61,3 +61,21 @@
         - [ ] For addresses with an 'X' in the address number, you can replace it with a '0' (e.g. '90X UNIVERSITY AV W' would become '980 UNIVERSITY AV W'). Careful not to replace all X's though - there could be an X in the street name!
 
 - [ ] Format Badge Image to right size
+
+## Tools Used
+ - https://10015.io/tools/css-background-pattern-generator
+ - https://coolors.co/d5dbd8-586ba4-ff934f-3f826d-957964
+ - https://www.schemecolor.com/google-map-basic-colors.php
+ - 
+
+ ## Helpful Things to Know
+ ```
+ npm run dev -- --port 5500
+ ```
+ - To add CORS to server.js so communication will work between API and 
+    website: https://www.section.io/engineering-education/how-to-use-cors-in-nodejs-with-express/
+To run Rest API and Dev environment: 
+    - First you need to open two separate visual studio windows -- one for the website and the other for the St. Paul RESTApi
+    - Second you need to launch both projects in their respective windows
+    (NOTE: make sure they are on different ports)
+    - As long as both are running they should be set up so they can talk with each other -- CORS code added to top of server.js
