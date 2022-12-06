@@ -304,6 +304,7 @@ app.put('/new-incident', (req, res) => {
 
 // DELETE request handler for new crime incident
 app.delete('/remove-incident', (req, res) => {
+    console.log(req.body)
     let incident_num = req.body.case_number;
     if (incident_num == undefined) {
         res.status(404).type('text').send('Invalid response... Please format in JSON (e.g. { "case_number": 5 })');

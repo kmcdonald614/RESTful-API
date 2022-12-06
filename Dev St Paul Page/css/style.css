@@ -15,3 +15,41 @@ html {
     background-color: #586ba4;
     /* color pallette link: https://coolors.co/d5dbd8-586ba4-ff934f-3f826d-957964 */
 }
+/* Scrollbar Generator  */
+/* Firefox */
+* {
+    scrollbar-width: thin;
+    scrollbar-color: #C0C0C0 #DEE3EB;
+  }
+  
+  /* Chrome, Edge and Safari */
+  *::-webkit-scrollbar {
+    /* width: 5px; */
+    width: 15px;
+    height: 15px;
+  }
+  *::-webkit-scrollbar-track {
+    border-radius: 5px;
+    background-color: #DEE3EB;
+  }
+  
+  *::-webkit-scrollbar-track:hover {
+    background-color: #DEE3EB;
+  }
+  
+  *::-webkit-scrollbar-track:active {
+    background-color: #DEE3EB;
+  }
+  
+  *::-webkit-scrollbar-thumb {
+    border-radius: 5px;
+    background-color: #C0C0C0;
+  }
+  
+  *::-webkit-scrollbar-thumb:hover {
+    background-color: #969696;
+  }
+  
+  *::-webkit-scrollbar-thumb:active {
+    background-color: #959595;
+  }

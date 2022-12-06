@@ -17,9 +17,9 @@
     - [ ] Clamp input values if lat/long is outside of St. Paul's bounding box
 - [ ] Retrieve data from your St. Paul Crime API
     - [ ] By default, include 1,000 most recent crimes in the database
-    - [ ] Populate a table with one row per crime (use neighborhood_name rather than neighborhood_number, and incident_type rather than code)
+    - [X] Populate a table with one row per crime (use neighborhood_name rather than neighborhood_number, and incident_type rather than code)
     - [ ] Update neighborhood tags display based on current location that is seen (use hint above)
-        - [ ] Table should be ordered with most recent on top 
+        - [X] Table should be ordered with most recent on top 
         - [ ] Only show crimes that occurred in neighborhoods visible on the map
             - HINT: get lat/long coordinates for the NW and SE corners of the map to use as the min/max lat/long coordinates
         - [ ] Draw markers on the map for each neighborhood
@@ -49,10 +49,11 @@
         - [ ] Changing a filter should trigger a new request to the St. Paul Crime API
             - It's OK to have a separate 'Update' button, so users can change many filters before triggering a new request
     - [ ] Style the background color of rows in the table to categorize crimes as "violent crimes" (crimes against another person), "property crimes" (crimes against a person's or business' property), or "other crimes" (anything else)
+    - [ ] get the code ranges that identify what the crime is - use these to generate colors for above point
         - [ ] You can categorize as you see fit - here's a link with more info to help though: https://www.justia.com/criminal/offenses/ 
     - [ ] Also include a legend for the colors
 
-- [ ] Add a 'delete' button for each crime in the table
+- [X] Add a 'delete' button for each crime in the table
     - Clicking this button should submit a DELETE request to remove the incident from the database
 
 - [ ] Add a marker to the map at exact crime location when selected from the table
