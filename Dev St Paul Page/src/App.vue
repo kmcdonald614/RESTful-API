@@ -13,6 +13,7 @@ export default {
             headerData: [],
             tableData: [],
             searchData: "",
+            formCondition: false,
             leaflet: {
                 map: null,
                 center: {
@@ -89,6 +90,28 @@ export default {
                 });
             });
         },
+        customMapTag(color) {
+            const cssStyle = `
+                background-color: ${color};
+                width: 1.75rem;
+                height: 1.75rem;
+                display: block;
+                left: -1rem;
+                top: -1rem;
+                position: relative;
+                border-radius: 4rem 4rem 0;
+                transform: rotate(45deg);
+                border: 1px solid #FFFFFF`
+            // NOTE Add image overlay here
+            const icon = L.divIcon({
+                className: "custom marker",
+                iconAnchor: [0, 24],
+                labelAnchor: [-6, 0],
+                popupAnchor: [0, -36],
+                html: `<span style="${cssStyle}" />`
+            })
+            return icon;
+        },
         submitSearch() {
             // This method will handle the following: 
             /*
@@ -104,9 +127,13 @@ export default {
 
             this.getJSON(`https://nominatim.openstreetmap.org/search?q='${this.searchData}, St. Paul, Minnesota'&format=json&limit=50&accept-language=en&countrycodes=us`)
                 .then((data) => {
-                    //console.log(data[0])
-                    let message = 'address date time incident and delete button';
-                    L.marker([data[0].lat, data[0].lon]).addTo(this.leaflet.map).bindPopup(message);
+                    // need to check if lat and lon are within boundaries otherwise clamp them
+                    // compare lat and lon from result and map it to bounds of one of the neighborhoods and map that 
+                    //      neighborhood to the dialog box 
+                    let message =
+                        `${data[0].display_name} <br> Latitude: ${data[0].lat} <br> Longitude: ${data[0].lon}`
+
+                    L.marker([data[0].lat, data[0].lon], { icon: this.customMapTag('#708ce0') }).addTo(this.leaflet.map).bindPopup(message);
                     this.leaflet.map.setView([data[0].lat, data[0].lon], 16);
                     //     value.marker = value.marker.bindPopup(`${value.name}`);
                 })
@@ -129,7 +156,7 @@ export default {
                 this.tableData = this.incidents;
 
                 this.tableData = this.incidents.map((element) => {
-                    
+
                     let code = element.code;
                     let neighborhood_number = element.neighborhood_number;
                     let block = element.block;
@@ -144,8 +171,8 @@ export default {
                         }
                     }
                     if (neighborhood_number != null || neighborhood_number != undefined) {
-                        if (neighborhood_number >=1 && neighborhood_number <=17) {
-                            updateVal.neighborhood_name = this.neighborhoods[neighborhood_number-1].neighborhood_name;
+                        if (neighborhood_number >= 1 && neighborhood_number <= 17) {
+                            updateVal.neighborhood_name = this.neighborhoods[neighborhood_number - 1].neighborhood_name;
                         } else {
                             updateVal.neighborhood_name = ''
                         }
@@ -153,12 +180,12 @@ export default {
                     let blockArray = block.split(' ');
                     // check for number in blockArray[0]
                     if (/\d/.test(blockArray[0]) == true || blockArray[0] == 'X' || blockArray[0] == 'XX'
-                    || blockArray[0] == 'XXX' || blockArray[0] == 'XXXX' || blockArray[0] == 'XXXXX') {
+                        || blockArray[0] == 'XXX' || blockArray[0] == 'XXXX' || blockArray[0] == 'XXXXX') {
                         // replace Xs with 0s in blockArray[0] 
-                         blockArray[0] = `${blockArray[0].replaceAll('X', '0')}`
+                        blockArray[0] = `${blockArray[0].replaceAll('X', '0')}`
                     }
                     updateVal.block = blockArray.join(' ');
-                    
+
                     return updateVal;
                 })
             })
@@ -174,10 +201,13 @@ export default {
                 if (key == 'neighborhood_number') {
                     key = 'neighborhood_name'
                 }
+                if (key == 'code') {
+                    key = 'Description'
+                }
                 let metaArr = key.split('_')
                 for (let element in metaArr) {
                     let val = metaArr[element];
-                    metaArr[element] = val.slice(0,1).toUpperCase()+val.slice(1);
+                    metaArr[element] = val.slice(0, 1).toUpperCase() + val.slice(1);
                 }
                 key = metaArr.join(' ');
                 this.headerData.push(key)
@@ -188,11 +218,19 @@ export default {
             this.uploadJSON("DELETE", url, { case_number: case_number }).then((data) => {
                 this.tableData.splice(index, 1);
                 alert("The record has been deleted...");
-                 
+
             })
                 .catch((err) => {
                     alert("The record does not exist or has already beed deleted.")
-            })
+                })
+        },
+        checkFormCondition(childData) {
+            if (childData == true) {
+                this.tableData = []
+                this.headerData = []
+                this.getData('', '', '')
+            }
+
         }
     },
     created() {
@@ -215,7 +253,7 @@ export default {
                 // console.log(value)
             });
             $(this.leaflet.neighborhood_markers).each((key, value) => {
-                value.marker = L.marker(value.location).addTo(district_boundary);
+                value.marker = L.marker(value.location, {icon: this.customMapTag('#586ba4')}).addTo(district_boundary);
                 this.getJSON(`http://localhost:8000/neighborhoods?id=${key + 1}`).then((data) => {
                     value.marker = value.marker.bindPopup(`${data[0].neighborhood_name}
                      ${value.location[0]}, ${value.location[1]}`);
@@ -282,6 +320,7 @@ export default {
                 </div>
                 <div class="grid-x grid-padding-x" style="padding: 15px;">
                     <div class="large-12 medium-12 small-12 cell table_format Flipped">
+                        <div style="padding: 5px;"></div>
                         <div class="table-format Content">
                             <table>
                                 <tr>
@@ -290,7 +329,9 @@ export default {
                                     }}</th>
                                     <th>Delete</th>
                                 </tr>
-                                <tr v-for="(element, index) in tableData">
+                                <tr v-for="(element, index) in tableData"
+                                    :class="(element.code >= 0 && element.code <= 299 || element.code >= 400 && element.code <= 499 || element.code >= 800 && element.code <= 899) ? 'violent' :
+                                    (element.code >= 300 && element.code <= 399 || element.code >= 500 && element.code <= 699 || element.code >= 900 && element.code <= 999 || element.code >= 1400 && element.code <= 1499) ? 'property' : 'other'">
                                     <td>{{ element.case_number }}</td>
                                     <td>{{ element.date }}</td>
                                     <td>{{ element.time }}</td>
@@ -298,18 +339,35 @@ export default {
                                     <td>{{ element.incident }}</td>
                                     <td>{{ element.police_grid }}</td>
                                     <td>{{ element.neighborhood_name }}</td>
+                                    <!-- make it into a link that will redirect to neighborhood marker -->
                                     <td>{{ element.block }}</td>
+                                    <!-- make it into a link that will redirect map to exact lat and lon location when clicked -->
                                     <td><button @click="deleteRecord(element.case_number, index)">DELETE</button></td>
                                 </tr>
                             </table>
                         </div>
+                        <div class="large-12 medium-12 small-12 cell Content color-legend">
+                            <div class="color-legend">
+                                <p>Violent Crimes:</p>
+                                <div class="violent box"></div>
+                            </div>
+                            <div class="color-legend">
+                                <p>Property Crimes:</p>
+                                <div class="property box"></div>
+                            </div>
+                            <div class="color-legend">
+                                <p>Other Crimes:</p>
+                                <div class="other box"></div>
+                            </div>
+                        </div>
+                        <div style="padding: 5px;"></div>
                     </div>
                 </div>
             </div>
 
         </div>
         <div v-if="view === 'new_incident'">
-            <NewIncident />
+            <NewIncident @subCon="checkFormCondition($event)" />
         </div>
         <div v-if="view === 'about'">
             <About_Page />
@@ -349,12 +407,36 @@ th {
 }
 
 th {
-    background-color: rgb(150,150,150);
+    background-color: rgb(150, 150, 150);
 }
 
 .table_format {
     background-color: rgb(200, 200, 200);
     overflow-x: auto;
+}
+
+.violent {
+    background-color: #A44A3F;
+}
+
+.property {
+    background-color: #D19C1D;
+}
+
+.other {
+    background-color: #32936F;
+}
+
+.color-legend {
+    display: flex;
+    justify-content: space-evenly;
+}
+
+.box {
+    width: 20px;
+    height: 20px;
+    border: 1px black solid;
+    margin-left: 5px;
 }
 
 .Flipped,
@@ -375,9 +457,7 @@ img {
     margin: auto;
 }
 
-.buffer {
-    /* background-color: red; */
-}
+.buffer {}
 
 #leafletmap {
     height: 500px;
