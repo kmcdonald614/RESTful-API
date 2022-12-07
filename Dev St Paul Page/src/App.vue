@@ -277,7 +277,7 @@ export default {
 
         },
         onMapClick(e) {
-            console.log(e.latlng.lat)
+            // console.log(e.latlng.lat)
             if (this.leaflet.searchMarker !== null) {
                 this.leaflet.map.removeLayer(this.leaflet.searchMarker);
             }
@@ -290,7 +290,8 @@ export default {
             this.leaflet.searchMarker = marker;
             marker.bindPopup(message, { closeButton: true });
 
-            this.leaflet.map.addLayer(marker)
+            // this.leaflet.map.addTo(marker)
+            marker.addTo(this.leaflet.map)
             this.leaflet.map.flyTo(e.latlng, 16);
             this.searchData = `${e.latlng.lat}, ${e.latlng.lng}`
         }, 
@@ -324,6 +325,8 @@ export default {
                      ${value.location[0]}, ${value.location[1]}`);
                     // need to determine how to add crime count to these bubbles
                     this.leaflet.map.on('click', this.onMapClick);
+                    this.leaflet.map.on('dragend', (data) => {console.log('hello')})
+                    
                 })
                     .catch((err) => {
                         console.log(err)
