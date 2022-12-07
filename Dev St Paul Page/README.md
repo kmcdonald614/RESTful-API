@@ -9,14 +9,16 @@
         HINT: zoom levels 11-18 are good
         NOTE: this is already the default setup in the starter code!
     - [X] Have an input box and 'Go' button for a user to type a location (lat/  long coordinates, address, etc.)
-    - [ ] Implement the method that will use the searchbox to update the map
-    - [ ] Add a map layer that will be cleared when new search is implemented, when someone scrolls
+    - [X] Implement the method that will use the searchbox or crime table click to update the map
+    - [X] Add a map layer that will be cleared when new search is implemented, when someone scrolls
     - [ ] Map should update when location is entered and 'Go' button pressed
-    - [ ] Make sure that previously added marker from search is cleared when a new search is implemented
+    - [X] Make sure that previously added marker from search is cleared when a new search is implemented
     - [ ] Input box text should update with new location (lat/long coordinates or address) when map is panned/zoomed
         - NOTE: updating once pan/zoom has ended is recommended - constantly updating this during a pan will overwhelm the system
-    - [ ] Use the Nominatim API (https://nominatim.org/release-docs/develop/api/Overview/ to convert between address and lat/long
+    - [X] Use the Nominatim API (https://nominatim.org/release-docs/develop/api/Overview/ to convert between address and lat/long
     - [ ] Clamp input values if lat/long is outside of St. Paul's bounding box
+    - [ ] Determine how to get current view map bounds and compare that to neighborhood tags location to determine what should be seen in the below table
+    - [ ] add number of total incidents from total 1000 imported in 
 - [ ] Retrieve data from your St. Paul Crime API
     - [X] By default, include 1,000 most recent crimes in the database
     - [X] Populate a table with one row per crime (use neighborhood_name rather than neighborhood_number, and incident_type rather than code)
@@ -25,7 +27,7 @@
         - [ ] Only show crimes that occurred in neighborhoods visible on the map
             - HINT: get lat/long coordinates for the NW and SE corners of the map to use as the min/max lat/long coordinates
         - [X] Draw markers on the map for each neighborhood
-            - [ ] Marker should have popup to show the number of crimes committed in that neighborhood
+            - [ ] Marker should have popup to show the number of crimes committed in that neighborhood - out of total or out of 1000 imported?
     - [X] New Incident upload form
         - [X] Create a user input form for users to add a new crime incident to the database (i.e. submit the PUT request)
         - [X] Ensure all fields are filled out before submitting request, otherwise show some error message
@@ -36,7 +38,7 @@
         - [ ] Video demo of the application (2 - 4 minutes) - include voiceover
             Can natively embed or upload to YouTube and embed
         - [ ] Six interesting findings that you discovered using your application
-- [ ] Fill out dependencies in Package.json
+- [X] Fill out dependencies in Package.json
 
 ## Implement additional features to earn a B or A (5 pts each)
 

@@ -21,6 +21,7 @@ export default {
                     lng: -93.102222,
                     address: ""
                 },
+                searchMarker: null,
                 zoom: 12,
                 bounds: {
                     nw: { lat: 45.008206, lng: -93.217977 },
@@ -112,7 +113,8 @@ export default {
             })
             return icon;
         },
-        submitSearch() {
+        submitSearch(messageData) {
+            
             // This method will handle the following: 
             /*
             take data from search data and retrieve lat and lon values of search
@@ -124,20 +126,62 @@ export default {
 
             // https://nominatim.openstreetmap.org/search?q='St. Paul'
             // '&format=json&limit=50&accept-language=en&countrycodes='US'
+            if (this.leaflet.searchMarker !== null) {
+                this.leaflet.map.removeLayer(this.leaflet.searchMarker);
+            }
+
+            // console.log(this.leaflet.bounds.nw)
+            // let northLat = this.leaflet.bounds.nw.lat;
+            // let westLon = this.leaflet.bounds.nw.lng;
+            // let southLat = this.leaflet.bounds.se.lat;
+            // let eastLon = this.leaflet.bounds.se.lng;
 
             this.getJSON(`https://nominatim.openstreetmap.org/search?q='${this.searchData}, St. Paul, Minnesota'&format=json&limit=50&accept-language=en&countrycodes=us`)
                 .then((data) => {
                     // need to check if lat and lon are within boundaries otherwise clamp them
                     // compare lat and lon from result and map it to bounds of one of the neighborhoods and map that 
                     //      neighborhood to the dialog box 
-                    let message =
-                        `${data[0].display_name} <br> Latitude: ${data[0].lat} <br> Longitude: ${data[0].lon}`
+                    let lat = data[0].lat
+                    let lon = data[0].lon
+                    // console.log(lat, lon)
+                    // console.log(northLat, southLat, westLon, eastLon)
+                    //45.008206, -93.217977
+                    // Haskell Street West
 
-                    L.marker([data[0].lat, data[0].lon], { icon: this.customMapTag('#708ce0') }).addTo(this.leaflet.map).bindPopup(message);
-                    this.leaflet.map.setView([data[0].lat, data[0].lon], 16);
-                    //     value.marker = value.marker.bindPopup(`${value.name}`);
+                    // if (lat > northLat) {
+                    //     lat = northLat
+                    // } else if (lat < southLat) {
+                    //     lat = southLat
+                    // }
+
+                    // if (lon > westLon) {
+                    //     lon = westLon
+                    // } else if (lon < eastLon) {
+                    //     lon = eastLon
+                    // }
+                    // console.log(lat, lon)
+                    let message = ''
+                    if (messageData == null) {
+                        message =
+                        `${data[0].display_name} <br> 
+                        Latitude: ${lat} <br> 
+                        Longitude: ${lon}`
+                    } else {
+                        message = `Still Need to set up`
+                    }
+
+                    
+                    let marker = L.marker([lat, lon], { icon: this.customMapTag('#708ce0') })
+                    marker._id = 'marker'
+                    this.leaflet.searchMarker = marker;
+                    marker.bindPopup(message, { closeButton: true });
+                    this.leaflet.map.addLayer(marker)
+                    this.leaflet.map.flyTo([lat, lon], 16);
                 })
-                .catch((err) => console.log(err))
+                .catch((err) => {
+                    console.log(err)
+                    alert("That location is either outside of St. Paul or not available...")
+                })
         },
         getData(codesQuery, hoodQuery, incidentQuery) {
             this.getJSON(`http://localhost:8000/codes?${codesQuery}`).then((data) => {
@@ -231,6 +275,27 @@ export default {
                 this.getData('', '', '')
             }
 
+        },
+        onMapClick(e) {
+            console.log(e.latlng.lat)
+            if (this.leaflet.searchMarker !== null) {
+                this.leaflet.map.removeLayer(this.leaflet.searchMarker);
+            }
+            // need to add query to montemenmim api to get result for lat and lng
+            // need to also clamp lat and lng
+            let message = `Latitude: ${e.latlng.lat} <br> 
+                           Longitude: ${e.latlng.lng}`
+            let marker = L.marker(e.latlng, { icon: this.customMapTag('#708ce0') })
+            marker._id = 'marker'
+            this.leaflet.searchMarker = marker;
+            marker.bindPopup(message, { closeButton: true });
+
+            this.leaflet.map.addLayer(marker)
+            this.leaflet.map.flyTo(e.latlng, 16);
+            this.searchData = `${e.latlng.lat}, ${e.latlng.lng}`
+        }, 
+        onScroll() {
+            // Still need to implement this method or at least its function on the map
         }
     },
     created() {
@@ -253,11 +318,12 @@ export default {
                 // console.log(value)
             });
             $(this.leaflet.neighborhood_markers).each((key, value) => {
-                value.marker = L.marker(value.location, {icon: this.customMapTag('#586ba4')}).addTo(district_boundary);
+                value.marker = L.marker(value.location, { icon: this.customMapTag('#586ba4') }).addTo(district_boundary);
                 this.getJSON(`http://localhost:8000/neighborhoods?id=${key + 1}`).then((data) => {
                     value.marker = value.marker.bindPopup(`${data[0].neighborhood_name}
                      ${value.location[0]}, ${value.location[1]}`);
                     // need to determine how to add crime count to these bubbles
+                    this.leaflet.map.on('click', this.onMapClick);
                 })
                     .catch((err) => {
                         console.log(err)
@@ -310,7 +376,7 @@ export default {
                     <div class="large-10 medium-10 small-12 cell search_format">
                         <input v-model="searchData" type="text" id="textbox_format"
                             placeholder="e.g. 2115 Summit Avenue" required>
-                        <button type="button" class="button" @click="submitSearch">Search</button>
+                        <button type="button" class="button" @click="submitSearch(null)">Search</button>
                     </div>
                     <div class="large-1 medium-1 small-0 cell buffer"></div>
                     <div class="large-12 medium-12 small-12 cell" style="height: 5px;"></div>
