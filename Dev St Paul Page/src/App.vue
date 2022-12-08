@@ -290,13 +290,26 @@ export default {
             this.leaflet.searchMarker = marker;
             marker.bindPopup(message, { closeButton: true });
 
-            // this.leaflet.map.addTo(marker)
             marker.addTo(this.leaflet.map)
-            this.leaflet.map.flyTo(e.latlng, 16);
+            // this.leaflet.map.flyTo(e.latlng, 16); <-- cool zoom animation but creates an error that moves the marker on zoom out
             this.searchData = `${e.latlng.lat}, ${e.latlng.lng}`
         }, 
-        onScroll() {
+        onScroll(data) {
+            if (this.leaflet.searchMarker !== null) {
+                this.leaflet.map.removeLayer(this.leaflet.searchMarker);
+            }
             // Still need to implement this method or at least its function on the map
+            console.log(this.leaflet.map.getCenter())
+            let e = this.leaflet.map.getCenter();
+            let message = `Latitude: ${e.lat} <br> 
+                           Longitude: ${e.lng}`
+            let marker = L.marker(e, { icon: this.customMapTag('#708ce0') })
+            marker._id = 'marker'
+            this.leaflet.searchMarker = marker;
+            marker.bindPopup(message, { closeButton: true });
+
+            marker.addTo(this.leaflet.map)
+            this.searchData = `${e.lat}, ${e.lng}`
         }
     },
     created() {
@@ -325,7 +338,7 @@ export default {
                      ${value.location[0]}, ${value.location[1]}`);
                     // need to determine how to add crime count to these bubbles
                     this.leaflet.map.on('click', this.onMapClick);
-                    this.leaflet.map.on('dragend', (data) => {console.log('hello')})
+                    this.leaflet.map.on('dragend', (data) => this.onScroll(data))
                     
                 })
                     .catch((err) => {

@@ -14,11 +14,11 @@
     - [ ] Map should update when location is entered and 'Go' button pressed
     - [X] Make sure that previously added marker from search is cleared when a new search is implemented
     - [ ] Input box text should update with new location (lat/long coordinates or address) when map is panned/zoomed
-    - [ ] Summarize and create a function that handles click of map, double click of map, and scoll functions of map when a new marker is placed and where it is placed in relation to the operation that is being selected
+    - [ ] Summarize and create a function that handles click of map and scoll functions of map when a new marker is placed and where it is placed in relation to the operation that is being selected
         - NOTE: updating once pan/zoom has ended is recommended - constantly updating this during a pan will overwhelm the system
     - [X] Use the Nominatim API (https://nominatim.org/release-docs/develop/api/Overview/ to convert between address and lat/long
     - [ ] Clamp input values if lat/long is outside of St. Paul's bounding box
-    - [ ] Determine how to get current view map bounds and compare that to neighborhood tags location to determine what should be seen in the below table
+    - [X] Determine how to get current view map bounds and compare that to neighborhood tags location to determine what should be seen in the below table
     - [ ] add number of total incidents from total 1000 imported in 
 - [ ] Retrieve data from your St. Paul Crime API
     - [X] By default, include 1,000 most recent crimes in the database
@@ -105,3 +105,106 @@ To run Rest API and Dev environment:
     - Second you need to launch both projects in their respective windows
     (NOTE: make sure they are on different ports)
     - As long as both are running they should be set up so they can talk with each other -- CORS code added to top of server.js
+
+    - Leaflet.js helpful functions
+    clone()	Point	
+- Returns a copy of the current point.
+- 
+- add(<Point> otherPoint)	Point	
+- Returns the result of addition of the current and the given points.
+- 
+- subtract(<Point> otherPoint)	Point	
+- Returns the result of subtraction of the given point from the current.
+- 
+- divideBy(<Number> num)	Point	
+- Returns the result of division of the current point by the given number.
+- 
+- multiplyBy(<Number> num)	Point	
+- Returns the result of multiplication of the current point by the given number.
+- 
+- scaleBy(<Point> scale)	Point	
+- Multiply each coordinate of the current point by each coordinate of scale. In linear algebra terms, multiply the point by the scaling matrix defined by scale.
+- 
+- unscaleBy(<Point> scale)	Point	
+- Inverse of scaleBy. Divide each coordinate of the current point by each coordinate of scale.
+- 
+- round()	Point	
+- Returns a copy of the current point with rounded coordinates.
+- 
+- floor()	Point	
+- Returns a copy of the current point with floored coordinates (rounded down).
+- 
+- ceil()	Point	
+- Returns a copy of the current point with ceiled coordinates (rounded up).
+- 
+- trunc()	Point	
+- Returns a copy of the current point with truncated coordinates (rounded towards zero).
+- 
+- distanceTo(<Point> otherPoint)	Number	
+- Returns the cartesian distance between the current and the given points.
+- 
+- equals(<Point> otherPoint)	Boolean	
+- Returns true if the given point has the same coordinates.
+- 
+- contains(<Point> otherPoint)	Boolean	
+- Returns true if both coordinates of the given point are less than the corresponding current point coordinates (in absolute values).
+- 
+- toString()	String	
+- Returns a string representation of the point for debugging purposes.
+- 
+- extend(<LatLng> latlng)	this	
+- Extend the bounds to contain the given point
+- 
+- extend(<LatLngBounds> otherBounds)	this	
+- Extend the bounds to contain the given bounds
+- 
+- pad(<Number> bufferRatio)	LatLngBounds	
+- Returns bounds created by extending or retracting the current bounds by a given ratio in each direction. For example, a ratio of 0.5 extends the bounds by 50% in each direction. Negative values will retract the bounds.
+- 
+- getCenter()	LatLng	
+- Returns the center point of the bounds.
+- 
+- getSouthWest()	LatLng	
+- Returns the south-west point of the bounds.
+- 
+- getNorthEast()	LatLng	
+- Returns the north-east point of the bounds.
+- 
+- getNorthWest()	LatLng	
+- Returns the north-west point of the bounds.
+- 
+- getSouthEast()	LatLng	
+- Returns the south-east point of the bounds.
+- 
+- getWest()	Number	
+- Returns the west longitude of the bounds
+- 
+- getSouth()	Number	
+- Returns the south latitude of the bounds
+- 
+- getEast()	Number	
+- Returns the east longitude of the bounds
+- 
+- getNorth()	Number	
+- Returns the north latitude of the bounds
+- 
+- contains(<LatLngBounds> otherBounds)	Boolean	
+- Returns true if the rectangle contains the given one.
+- 
+- contains(<LatLng> latlng)	Boolean	
+- Returns true if the rectangle contains the given point.
+- 
+- intersects(<LatLngBounds> otherBounds)	Boolean	
+- Returns true if the rectangle intersects the given bounds. Two bounds intersect if they have at least one point in common.
+- 
+- overlaps(<LatLngBounds> otherBounds)	Boolean	
+- Returns true if the rectangle overlaps the given bounds. Two bounds overlap if their intersection is an area.
+- 
+- toBBoxString()	String	
+- Returns a string with bounding box coordinates in a 'southwest_lng,southwest_lat,northeast_lng,northeast_lat' format. Useful for sending requests to web services that return geo data.
+- 
+- equals(<LatLngBounds> otherBounds, <Number> maxMargin?)	Boolean	
+- Returns true if the rectangle is equivalent (within a small margin of error) to the given bounds. The margin of error can be overridden by setting maxMargin to a small number.
+- 
+- isValid()	Boolean	
+- Returns true if the bounds are properly initialized.
