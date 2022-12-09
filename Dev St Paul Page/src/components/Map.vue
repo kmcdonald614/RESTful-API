@@ -6,8 +6,8 @@ export default {
     watch: {
         formCondition() {
             console.log(this.formCondition)
-             // If true then repopulate the data
-             if (this.formCondition == true) {
+            // If true then repopulate the data
+            if (this.formCondition == true) {
                 this.tableData = [];
                 this.headerData = [];
                 this.getData('', '', '');
@@ -23,6 +23,7 @@ export default {
             tableData: [],
             searchData: "",
             totalCrimes: [],
+            boundary: [],
             leaflet: {
                 map: null,
                 center: {
@@ -124,7 +125,6 @@ export default {
             use this information to determine which neighborhood markers that are visible
                 and based on which are visible show the incidents in the below table based
                 on what markers are still visible or which neighborhood we are currently in
-            also need to make a marker unique for the click
             */
 
             // https://nominatim.openstreetmap.org/search?q='St. Paul'
@@ -260,22 +260,35 @@ export default {
                 })
         },
         onMapAction(data) {
+            //console.log('fired')
             if (this.leaflet.searchMarker !== null) {
                 this.leaflet.map.removeLayer(this.leaflet.searchMarker);
             }
-            // Still need to implement this method or at least its function on the map
-            //console.log(this.leaflet.map.getCenter())
-            // there is something up with the panning object --> look into fixing
             let coords = null;
             if (data == 'getcenter') {
                 coords = this.leaflet.map.getCenter();
             } else {
                 coords = data.latlng;
             }
-            let message = this.markerPopUp(['<strong>neighborhood name</strong>',
+            let neighborhoodIn = '';
+            for (let i = 0; i < this.boundary.length; i++) {
+                let polygon = this.boundary[i];
+                if (this.markerInNeighborhood(coords, polygon.getLatLngs()[0]) == true) {
+                    for (let j = 0; j < this.neighborhoods.length; j++) {
+                        let district = this.neighborhoods[j];
+                        if (polygon._id == district.neighborhood_number) {
+                           neighborhoodIn = this.neighborhoods[j]
+                            console.log(this.neighborhoods[j])
+                            break;
+                        }
+                    }
+                }
+            }
+            let message = this.markerPopUp([`<strong>${neighborhoodIn.neighborhood_name}</strong>`,
                 `Latitude: ${coords.lat}`, `Longitude: ${coords.lng}`]);
             this.createMarker(message, coords, '#708ce0', 'Search');
             this.updateSearchBar(coords);
+
         },
         createMarker(message, coords, markerColor, typeMarker) {
             let marker = L.marker(coords, { icon: this.customMapTag(markerColor) });
@@ -308,15 +321,15 @@ export default {
         },
         updateSearchBar(coords) {
             // search by lat and lng
-            this.getJSON(`https://nominatim.openstreetmap.org/search?q='${coords.lat}, ${coords.lng}'&format=json&limit=1&accept-language=en&countrycodes=us`)
-                .then((data) => {
-                    console.log(data)
-                    if (data[0] == undefined || data[0] == null) {
-                        this.searchData = `${coords.lat}, ${coords.lng}`;
-                    } else {
-                        this.searchData = `${data[0].display_name}`;
-                    }
-                })
+            // this.getJSON(`https://nominatim.openstreetmap.org/search?q='${coords.lat}, ${coords.lng}'&format=json&limit=1&accept-language=en&countrycodes=us`)
+            // .then((data) => {
+            // console.log(data)
+            // if (data[0] == undefined || data[0] == null) {
+            this.searchData = `${coords.lat}, ${coords.lng}`;
+            // } else {
+            // this.searchData = `${data[0].display_name}`;
+            // }
+            // })
             // need to do nominatium call to update with phycial address
 
         },
@@ -329,6 +342,21 @@ export default {
                     this.createMarker(message, [value.location[0], value.location[1]], '#586ba4', 'Neighborhood');
                 })
             })
+        },
+        markerInNeighborhood(coords, polygonCoords) {
+            var polyPoints = polygonCoords;
+            var x = coords.lat, y = coords.lng;
+            var inside = false;
+            for (var i = 0, j = polyPoints.length - 1; i < polyPoints.length; j = i++) {
+                var yi = polyPoints[i].lat, xi = polyPoints[i].lng;
+                var yj = polyPoints[j].lat, xj = polyPoints[j].lng;
+                // console.log(xi, yi, xj, yj)
+                var intersect = ((yi > y) != (yj > y))
+                    && (x < (xj - xi) * (y - yi) / (yj - yi) + xi);
+                if (intersect) inside = !inside;
+            }
+            console.log(inside)
+            return inside;
         }
     },
     created() {
@@ -347,8 +375,20 @@ export default {
         this.getJSON("/data/StPaulDistrictCouncil.geojson").then((result) => {
             // St. Paul GeoJSON
             $(result.features).each((key, value) => {
+                //console.log(value.properties)
                 district_boundary.addData(value);
+                //console.log(value.geometry.coordinates[0][0])
+                let tempPoly = []
+                value.geometry.coordinates[0][0].forEach((element) => {
+                    tempPoly.push(element)
+                })
+                //console.log(tempPoly)
+                let polygon = L.polygon(tempPoly, { noClip: false });
+                polygon._id = value.properties.district;
+                // console.log(polygon)
+                this.boundary.push(polygon);
             });
+            //console.log(this.boundary)
             // Initialize Map Events
             this.leaflet.map.on('click', this.onMapAction);
             this.leaflet.map.on('dragend', (data) => this.onMapAction('getcenter'))
