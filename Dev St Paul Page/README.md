@@ -14,11 +14,12 @@
     - [ ] Map should update when location is entered and 'Go' button pressed
     - [X] Make sure that previously added marker from search is cleared when a new search is implemented
     - [ ] Input box text should update with new location (lat/long coordinates or address) when map is panned/zoomed
-    - [ ] Summarize and create a function that handles click of map and scoll functions of map when a new marker is placed and where it is placed in relation to the operation that is being selected
+    - [X] Summarize and create a function that handles click of map and scoll functions of map when a new marker is placed and where it is placed in relation to the operation that is being selected
         - NOTE: updating once pan/zoom has ended is recommended - constantly updating this during a pan will overwhelm the system
     - [X] Use the Nominatim API (https://nominatim.org/release-docs/develop/api/Overview/ to convert between address and lat/long
     - [ ] Clamp input values if lat/long is outside of St. Paul's bounding box
     - [X] Determine how to get current view map bounds and compare that to neighborhood tags location to determine what should be seen in the below table
+    - [ ] add app.vue code to new main component];
     - [ ] add number of total incidents from total 1000 imported in 
 - [ ] Retrieve data from your St. Paul Crime API
     - [X] By default, include 1,000 most recent crimes in the database
