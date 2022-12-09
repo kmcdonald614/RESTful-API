@@ -114,10 +114,13 @@ export default {
             })
             return icon;
         },
-        getAddress() {
-
+        getAddress(lat, lng, callback) {                     //<value>,…,…,&<params>
+            this.getJSON(`https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lng}&format=json`)
+                .then((data) => {
+                   callback(data)
+                })
         },
-        submitSearch(messageData) {
+        submitSearch() {
 
             // This method will handle the following: 
             /*
@@ -126,7 +129,7 @@ export default {
                 and based on which are visible show the incidents in the below table based
                 on what markers are still visible or which neighborhood we are currently in
             */
-
+            
             // https://nominatim.openstreetmap.org/search?q='St. Paul'
             // '&format=json&limit=50&accept-language=en&countrycodes='US'
             if (this.leaflet.searchMarker !== null) {
@@ -140,19 +143,31 @@ export default {
                     //      neighborhood to the dialog box 
                     let lat = data[0].lat
                     let lng = data[0].lon
-                    console.log(lat, lng)
+                    this.getAddress(lat,lng, (data2) => {
+                        let address = data2;
+                        console.log(address)
                     let descriptorData = '';
                     if (lat != undefined || lng != undefined) {
-                        descriptorData = data[0].display_name;
+                        if (address != null || address != undefined) {
+                            descriptorData += `<strong>${data[0].display_name}</strong><br>
+                            House Number: ${address.address.house_number} <br>
+                            Street: ${address.address.road} <br>
+                            State: ${address.address.state} <br>
+                            City: ${address.address.city} <br> 
+                            Zip: ${address.address.postcode} <br>
+                            Suburb: ${address.address.suburb}`
+                        }
                     } else {
-                        descriptorData = `This will be the city message`;
+                        descriptorData = data[0].display_name;
                     }
                     let coords = [lat, lng];
-                    let message = this.markerPopUp([`<strong>${descriptorData}</strong>`,
+                    let message = this.markerPopUp([`${descriptorData}`,
                     `Latitude: ${lat}`, `Longitude: ${lng}`]);
                     this.createMarker(message, coords, '#708ce0', 'Search');
                     this.updateSearchBar(coords);
                     // this.leaflet.map.flyTo([lat, lon], 16);
+                    });
+                    
                 })
                 .catch((err) => {
                     console.log(err)
@@ -270,20 +285,8 @@ export default {
             } else {
                 coords = data.latlng;
             }
-            let neighborhoodIn = '';
-            for (let i = 0; i < this.boundary.length; i++) {
-                let polygon = this.boundary[i];
-                if (this.markerInNeighborhood(coords, polygon.getLatLngs()[0]) == true) {
-                    for (let j = 0; j < this.neighborhoods.length; j++) {
-                        let district = this.neighborhoods[j];
-                        if (polygon._id == district.neighborhood_number) {
-                           neighborhoodIn = this.neighborhoods[j]
-                            console.log(this.neighborhoods[j])
-                            break;
-                        }
-                    }
-                }
-            }
+            let neighborhoodIn = this.markerInNeighborhood(coords);
+            
             let message = this.markerPopUp([`<strong>${neighborhoodIn.neighborhood_name}</strong>`,
                 `Latitude: ${coords.lat}`, `Longitude: ${coords.lng}`]);
             this.createMarker(message, coords, '#708ce0', 'Search');
@@ -343,7 +346,7 @@ export default {
                 })
             })
         },
-        markerInNeighborhood(coords, polygonCoords) {
+        markerInPolygon(coords, polygonCoords) {
             var polyPoints = polygonCoords;
             var x = coords.lat, y = coords.lng;
             var inside = false;
@@ -355,8 +358,22 @@ export default {
                     && (x < (xj - xi) * (y - yi) / (yj - yi) + xi);
                 if (intersect) inside = !inside;
             }
-            console.log(inside)
+            // console.log(inside)
             return inside;
+        }, 
+        markerInNeighborhood(coords) {
+            for (let i = 0; i < this.boundary.length; i++) {
+                let polygon = this.boundary[i];
+                if (this.markerInPolygon(coords, polygon.getLatLngs()[0]) == true) {
+                    for (let j = 0; j < this.neighborhoods.length; j++) {
+                        let district = this.neighborhoods[j];
+                        if (polygon._id == district.neighborhood_number) {
+                          return this.neighborhoods[j]
+                        }
+                    }
+                }
+            }
+            return undefined;
         }
     },
     created() {
@@ -408,7 +425,7 @@ export default {
             <div class="large-10 medium-10 small-12 cell search_format">
                 <input v-model="searchData" type="text" id="textbox_format" placeholder="e.g. 2115 Summit Avenue"
                     required>
-                <button type="button" class="button" @click="submitSearch(null)">Search</button>
+                <button type="button" class="button" @click="submitSearch">Search</button>
             </div>
             <div class="large-1 medium-1 small-0 cell buffer"></div>
             <div class="large-12 medium-12 small-12 cell" style="height: 5px;"></div>

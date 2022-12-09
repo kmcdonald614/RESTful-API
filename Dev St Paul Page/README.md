@@ -19,8 +19,9 @@
     - [X] Use the Nominatim API (https://nominatim.org/release-docs/develop/api/Overview/ to convert between address and lat/long
     - [ ] Clamp input values if lat/long is outside of St. Paul's bounding box
     - [X] Determine how to get current view map bounds and compare that to neighborhood tags location to determine what should be seen in the below table
-    - [ ] add app.vue code to new main component];
-    - [ ] add number of total incidents from total 1000 imported in 
+    - [ ] Have all Clicked, Scrolled and Search Bar Markers retrieve the same format of information amenity if it is one other wise street number, street name, zip, city, state, suburb, neighboorhood, latitude and longitude
+    - [X] add app.vue code to new main component];
+    - [X] add number of total incidents from total 1000 imported in 
 - [ ] Retrieve data from your St. Paul Crime API
     - [X] By default, include 1,000 most recent crimes in the database
     - [X] Populate a table with one row per crime (use neighborhood_name rather than neighborhood_number, and incident_type rather than code)
