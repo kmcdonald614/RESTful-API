@@ -22,7 +22,7 @@
     - [X] Have all Clicked, Scrolled and Search Bar Markers retrieve the same format of information amenity if it is one other wise street number, street name, zip, city, state, suburb, neighboorhood, latitude and longitude
     - [X] add app.vue code to new main component];
     - [X] add number of total incidents from total 1000 imported in 
-- [ ] Retrieve data from your St. Paul Crime API
+- [X] Retrieve data from your St. Paul Crime API
     - [X] By default, include 1,000 most recent crimes in the database
     - [X] Populate a table with one row per crime (use neighborhood_name rather than neighborhood_number, and incident_type rather than code)
     - [X] Update neighborhood tags display based on current location that is seen (use hint above)
@@ -47,13 +47,13 @@
 
 - [ ] Create UI controls to filter crime data
     - [ ] Filter based on the following
-            - [ ] incident_type: list of checkboxes per incident_type
+        - [ ] incident_type: list of checkboxes per incident_type
                 OK (in fact recommended) to aggregate similar incident types (e.g. codes 1800 - 1885 are all sub-categories of 'Narcotics')
-            - [ ] neighborhood_name: list of checkboxes per neighborhood_name
+        - [ ] neighborhood_name: list of checkboxes per neighborhood_name
             date range: select a start and end date (only show crimes between those dates)
-            - [ ] time range: select a start and end time (only show crimes that occurred between those times of day)
-            - [ ] max incidents: select maximum number of incidents to retrieve / show
-        - [ ] Changing a filter should trigger a new request to the St. Paul Crime API
+        - [ ] time range: select a start and end time (only show crimes that occurred between those times of day)
+        - [ ] max incidents: select maximum number of incidents to retrieve / show
+    - [ ] Changing a filter should trigger a new request to the St. Paul Crime API
             - It's OK to have a separate 'Update' button, so users can change many filters before triggering a new request
     - [X] Style the background color of rows in the table to categorize crimes as "violent crimes" (crimes against another person), "property crimes" (crimes against a person's or business' property), or "other crimes" (anything else)
     - [X] get the code ranges that identify what the crime is - use these to generate colors for above point
