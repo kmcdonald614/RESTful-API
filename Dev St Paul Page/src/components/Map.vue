@@ -1,4 +1,5 @@
 <script>
+import * as turf from '@turf/turf';
 export default {
     props: {
         formCondition: false
@@ -24,6 +25,7 @@ export default {
             searchData: "",
             totalCrimes: [],
             boundary: [],
+            neighborhoodMergePoly: [],
             leaflet: {
                 map: null,
                 center: {
@@ -99,7 +101,7 @@ export default {
                 height: 1.75rem;
                 display: block;
                 left: -1rem;
-                top: -1rem;
+                top: -0.5rem;
                 position: relative;
                 border-radius: 4rem 4rem 0;
                 transform: rotate(45deg);
@@ -117,94 +119,91 @@ export default {
         getAddress(lat, lng, callback) {                     //<value>,…,…,&<params>
             this.getJSON(`https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lng}&format=json`)
                 .then((data) => {
-                   callback(data)
+                    let messageArr = "";
+                    this.updateSearchBar(data);
+                    if (data != null || data != undefined) {
+                        for (let key in data.address) {
+                            messageArr += `${key}: ${data.address[key]} <br>`;
+                        }
+                    } else {
+                        messageArr = `Latitude: ${lat} <br> Longitude: ${lng}`;
+                    }
+                    callback(messageArr)
                 })
         },
         submitSearch() {
 
-            // This method will handle the following: 
-            /*
-            take data from search data and retrieve lat and lon values of search
-            use this information to determine which neighborhood markers that are visible
-                and based on which are visible show the incidents in the below table based
-                on what markers are still visible or which neighborhood we are currently in
-            */
-            
-            // https://nominatim.openstreetmap.org/search?q='St. Paul'
-            // '&format=json&limit=50&accept-language=en&countrycodes='US'
+
             if (this.leaflet.searchMarker !== null) {
                 this.leaflet.map.removeLayer(this.leaflet.searchMarker);
             }
+            let selectElement = document.querySelector('#search-condition');
+            let output = selectElement.options[selectElement.selectedIndex].value;
+            
 
-            this.getJSON(`https://nominatim.openstreetmap.org/search?q='${this.searchData}, St. Paul, Minnesota'&format=json&limit=1&accept-language=en&countrycodes=us`)
-                .then((data) => {
-                    // need to check if lat and lon are within boundaries otherwise clamp them
-                    // compare lat and lon from result and map it to bounds of one of the neighborhoods and map that 
-                    //      neighborhood to the dialog box 
-                    let lat = data[0].lat
-                    let lng = data[0].lon
-                    this.getAddress(lat,lng, (data2) => {
-                        let address = data2;
-                        console.log(address)
-                    let descriptorData = '';
+            if (output == 'Address') {
+                console.log('check address')
+                 this.getJSON(`https://nominatim.openstreetmap.org/search?q='${this.searchData}, St. Paul, Minnesota'&format=json&limit=1&accept-language=en&countrycodes=us`)
+                    .then((data) => {
+                        let lat = data[0].lat
+                        let lng = data[0].lon
+                        this.getAddress(lat, lng, (addressData) => {
+                            if (lat != undefined || lng != undefined) {
+                                let coords = [lat, lng];
+                                let message = this.markerPopUp([`${addressData}`]);
+                                this.createMarker(message, coords, '#708ce0', 'Search');
+                                this.leaflet.map.flyTo(coords, 14);
+                            }
+                        });
+
+                    })
+                    .catch((err) => {
+                        console.log(err)
+                        alert("That location is either outside of St. Paul or not available...")
+                    })
+            } else {
+                let value = this.searchData.replace(/[\(\)]/g, '').split(',');
+                let lat = parseFloat(value[0]);
+                let lng = parseFloat(value[1]);
+                console.log(lat, lng)
+                this.getAddress(lat, lng, (addressData) => {
                     if (lat != undefined || lng != undefined) {
-                        if (address != null || address != undefined) {
-                            descriptorData += `<strong>${data[0].display_name}</strong><br>
-                            House Number: ${address.address.house_number} <br>
-                            Street: ${address.address.road} <br>
-                            State: ${address.address.state} <br>
-                            City: ${address.address.city} <br> 
-                            Zip: ${address.address.postcode} <br>
-                            Suburb: ${address.address.suburb}`
-                        }
-                    } else {
-                        descriptorData = data[0].display_name;
+                        let coords = [lat, lng];
+                        let message = this.markerPopUp([`${addressData}`]);
+                        this.createMarker(message, coords, '#708ce0', 'Search');
+                        this.leaflet.map.flyTo(coords, 14);
                     }
-                    let coords = [lat, lng];
-                    let message = this.markerPopUp([`${descriptorData}`,
-                    `Latitude: ${lat}`, `Longitude: ${lng}`]);
-                    this.createMarker(message, coords, '#708ce0', 'Search');
-                    this.updateSearchBar(coords);
-                    // this.leaflet.map.flyTo([lat, lon], 16);
+                })
+            }
+        },
+        getData(codesQuery, hoodQuery, incidentQuery) {
+            let codeHTTP = `http://localhost:8000/codes?${codesQuery}`;
+            let hoodHTTP = `http://localhost:8000/neighborhoods?${hoodQuery}`;
+            let incidentHTTP = `http://localhost:8000/incidents?${incidentQuery}`;
+
+            Promise.all([this.getJSON(codeHTTP), this.getJSON(hoodHTTP), this.getJSON(incidentHTTP)])
+                .then((data) => {
+                    [this.codes, this.neighborhoods, this.incidents] = [data[0], data[1], data[2]];                    
+                    this.getIncidentsMetaData(data[2][0])
+                    this.countIncidents(() => {
+                        this.addNeighborhoodTags();
                     });
-                    
+                    this.tableData = this.incidents;
+
+                    this.tableData = this.incidents.map((element) => {
+                        let code = element.code;
+                        let neighborhood_number = element.neighborhood_number;
+                        let block = element.block;
+                        let updateVal = element;
+                        updateVal = this.mergeCrimeDesc(code, updateVal);
+                        updateVal = this.mergeNeighborhood(neighborhood_number, updateVal);
+                        // let blockArray = block.split(' ');
+                        updateVal.block = this.replaceX(block.split(' '));
+                        return updateVal;
+                    })
                 })
                 .catch((err) => {
                     console.log(err)
-                    alert("That location is either outside of St. Paul or not available...")
-                })
-        },
-        getData(codesQuery, hoodQuery, incidentQuery) {
-            this.getJSON(`http://localhost:8000/codes?${codesQuery}`).then((data) => {
-                this.codes = data;
-                return this.getJSON(`http://localhost:8000/neighborhoods?${hoodQuery}`)
-            }).then((data) => {
-                this.neighborhoods = data;
-                return this.getJSON(`http://localhost:8000/incidents?${incidentQuery}`)
-            }).then((data) => {
-                this.incidents = data;
-                this.getIncidentsMetaData(data[0])
-                this.countIncidents(() => {
-                    this.addNeighborhoodTags();
-                });
-
-                // merge all this received data into a single array
-                this.tableData = this.incidents;
-
-                this.tableData = this.incidents.map((element) => {
-                    let code = element.code;
-                    let neighborhood_number = element.neighborhood_number;
-                    let block = element.block;
-                    let updateVal = element;
-                    updateVal = this.mergeCrimeDesc(code, updateVal);
-                    updateVal = this.mergeNeighborhood(neighborhood_number, updateVal);
-                    // let blockArray = block.split(' ');
-                    updateVal.block = this.replaceX(block.split(' '));
-                    return updateVal;
-                })
-            })
-                .catch((err) => {
-                    console.log(err);
                     alert("Error loading the data, please refresh your page...")
                 })
         },
@@ -213,7 +212,6 @@ export default {
             this.incidents.forEach((key, value) => {
                 this.totalCrimes[key.neighborhood_number] = this.totalCrimes[key.neighborhood_number] + 1;
             });
-            //console.log(this.totalCrimes)
             callback();
         },
         mergeCrimeDesc(code, updateVal) {
@@ -274,8 +272,27 @@ export default {
                     alert("The record does not exist or has already beed deleted.")
                 })
         },
+        clampOutOfBounds(coords) {
+            let pointX = coords.lng;
+                let pointY = coords.lat;
+                let leastDistance = null;
+                let distanceIndex = -1;
+                for (let i = 0; i < this.neighborhoodMergePoly.geometry.coordinates[0].length; i++) {
+                    let currCoords = this.neighborhoodMergePoly.geometry.coordinates[0][i];
+                    let currX = currCoords[0]
+                    let currY = currCoords[1]
+                    let distance = Math.sqrt((Math.pow(pointX-currX, 2))+(Math.pow(pointY-currY, 2)));
+                    if (leastDistance === null) leastDistance = distance;
+                    if (distance < leastDistance) {
+                        leastDistance = distance;
+                        distanceIndex = i;
+                    }   
+                }
+                let newCoords = this.neighborhoodMergePoly.geometry.coordinates[0][distanceIndex];
+                coords = {lat: newCoords[1], lng: newCoords[0]}
+                return coords; 
+        },
         onMapAction(data) {
-            //console.log('fired')
             if (this.leaflet.searchMarker !== null) {
                 this.leaflet.map.removeLayer(this.leaflet.searchMarker);
             }
@@ -284,17 +301,21 @@ export default {
                 coords = this.leaflet.map.getCenter();
             } else {
                 coords = data.latlng;
+                this.leaflet.map.flyTo(coords, 14);
             }
-            let neighborhoodIn = this.markerInNeighborhood(coords);
-            
-            let message = this.markerPopUp([`<strong>${neighborhoodIn.neighborhood_name}</strong>`,
-                `Latitude: ${coords.lat}`, `Longitude: ${coords.lng}`]);
-            this.createMarker(message, coords, '#708ce0', 'Search');
-            this.updateSearchBar(coords);
 
+            if (this.markerInNeighborhood(coords) === undefined) {
+                coords = this.clampOutOfBounds(coords);
+            }
+            this.getAddress(coords.lat, coords.lng, (addressData) => {
+                if (coords.lat != undefined || coords.lng != undefined) {
+                    let message = this.markerPopUp([`<strong>Location Data:</strong>`, `${addressData}`]);
+                    this.createMarker(message, coords, '#708ce0', 'Search');
+                }
+            });
         },
         createMarker(message, coords, markerColor, typeMarker) {
-            let marker = L.marker(coords, { icon: this.customMapTag(markerColor) });
+            let marker = new L.marker(coords, { icon: this.customMapTag(markerColor) });
             marker._id = 'marker';
             if (typeMarker != 'Neighborhood') {
                 this.leaflet.searchMarker = marker;
@@ -309,32 +330,59 @@ export default {
             })
             return message;
         },
-        checkMapBounds(coords) {
-            // check coords against st paul bounds
-            // console.log(lat, lon)
-            // console.log(northLat, southLat, westLon, eastLon)
-            //45.008206, -93.217977
-            // Haskell Street West
-
-            // console.log(this.leaflet.bounds.nw)
-            // let northLat = this.leaflet.bounds.nw.lat;
-            // let westLon = this.leaflet.bounds.nw.lng;
-            // let southLat = this.leaflet.bounds.se.lat;
-            // let eastLon = this.leaflet.bounds.se.lng;
+        checkMapBounds(id) {
+            let point = L.latLng(this.leaflet.neighborhood_markers[id-1].location);
+            let bounds = this.leaflet.map.getBounds();
+            let north = bounds.getNorth();
+            let south = bounds.getSouth();
+            let west = bounds.getWest();
+            let east = bounds.getEast();
+           
+            let latlngs = [[west, north],
+                           [east, north], 
+                           [east, south], 
+                           [west, south]];
+            let polygon = L.polygon(latlngs);            
+            return this.markerInPolygon(point, polygon.getLatLngs()[0]);
         },
-        updateSearchBar(coords) {
-            // search by lat and lng
-            // this.getJSON(`https://nominatim.openstreetmap.org/search?q='${coords.lat}, ${coords.lng}'&format=json&limit=1&accept-language=en&countrycodes=us`)
-            // .then((data) => {
-            // console.log(data)
-            // if (data[0] == undefined || data[0] == null) {
-            this.searchData = `${coords.lat}, ${coords.lng}`;
-            // } else {
-            // this.searchData = `${data[0].display_name}`;
-            // }
-            // })
-            // need to do nominatium call to update with phycial address
-
+        updateSearchBar(data) {            
+            if (data.address.leisure != undefined) {
+                this.searchData = `${data.address.leisure}`
+                $('#search-condition').prop('selectedIndex', 0)
+                return;
+            } else if (data.address.tourism != undefined){
+                this.searchData = `${data.address.tourism}`
+                $('#search-condition').prop('selectedIndex', 0)
+                return;
+            } else if (data.address.historic != undefined) {
+                this.searchData = `${data.address.historic}`
+                $('#search-condition').prop('selectedIndex', 0)
+                return;
+            } else if (data.address.building != undefined){
+                this.searchData = `${data.address.building}`
+                $('#search-condition').prop('selectedIndex', 0)
+                return;
+            } else if (data.address.aeroway != undefined) {
+                this.searchData = `${data.address.aeroway}`
+                $('#search-condition').prop('selectedIndex', 0)
+                return;
+            } else if (data.address.amenity != undefined){
+                this.searchData = `${data.address.amenity}`
+                $('#search-condition').prop('selectedIndex', 0)
+                return;
+            } else if (data.address.road != undefined) {
+                let streetAdd = data.address.road;
+                if (data.address.house_number != undefined) {
+                    streetAdd = data.address.house_number + ' ' + streetAdd;
+                }
+                this.searchData = `${streetAdd}`
+                $('#search-condition').prop('selectedIndex', 0)
+                return;
+            } else {
+                this.searchData = `${data.lat}, ${data.lon}`
+                $('#search-condition').prop('selectedIndex', 1)
+                return;
+            }
         },
         addNeighborhoodTags() {
             // Add neighborhood Tags
@@ -347,20 +395,19 @@ export default {
             })
         },
         markerInPolygon(coords, polygonCoords) {
+            console.log(coords, polygonCoords)
             var polyPoints = polygonCoords;
             var x = coords.lat, y = coords.lng;
             var inside = false;
             for (var i = 0, j = polyPoints.length - 1; i < polyPoints.length; j = i++) {
                 var yi = polyPoints[i].lat, xi = polyPoints[i].lng;
                 var yj = polyPoints[j].lat, xj = polyPoints[j].lng;
-                // console.log(xi, yi, xj, yj)
                 var intersect = ((yi > y) != (yj > y))
                     && (x < (xj - xi) * (y - yi) / (yj - yi) + xi);
                 if (intersect) inside = !inside;
             }
-            // console.log(inside)
             return inside;
-        }, 
+        },
         markerInNeighborhood(coords) {
             for (let i = 0; i < this.boundary.length; i++) {
                 let polygon = this.boundary[i];
@@ -368,13 +415,24 @@ export default {
                     for (let j = 0; j < this.neighborhoods.length; j++) {
                         let district = this.neighborhoods[j];
                         if (polygon._id == district.neighborhood_number) {
-                          return this.neighborhoods[j]
+                            return this.neighborhoods[j]
                         }
                     }
                 }
             }
             return undefined;
-        }
+        },
+        bindTableDisplayConditions(element) {
+            let returnString = ""
+            if (element.code >= 0 && element.code <= 299 || element.code >= 400 && element.code <= 499 || element.code >= 800 && element.code <= 899) {
+                returnString += 'violent'
+            } else if (element.code >= 300 && element.code <= 399 || element.code >= 500 && element.code <= 699 || element.code >= 900 && element.code <= 999 || element.code >= 1400 && element.code <= 1499) {
+                returnString += 'property'
+            } else {
+                returnString += 'other'
+            }
+            return `${returnString} ${element.neighborhood_number}`;
+        },
     },
     created() {
         this.getData('', '', '')
@@ -389,26 +447,51 @@ export default {
         this.leaflet.map.setMaxBounds([[44.883658, -93.217977], [45.008206, -92.993787]]);
         let district_boundary = new L.geoJson();
         district_boundary.addTo(this.leaflet.map);
+        let toMergePolygons = [];
         this.getJSON("/data/StPaulDistrictCouncil.geojson").then((result) => {
             // St. Paul GeoJSON
             $(result.features).each((key, value) => {
-                //console.log(value.properties)
+                toMergePolygons.push(value)
                 district_boundary.addData(value);
-                //console.log(value.geometry.coordinates[0][0])
                 let tempPoly = []
                 value.geometry.coordinates[0][0].forEach((element) => {
                     tempPoly.push(element)
+                    this.neighborhoodMergePoly.push(element);
                 })
-                //console.log(tempPoly)
                 let polygon = L.polygon(tempPoly, { noClip: false });
                 polygon._id = value.properties.district;
-                // console.log(polygon)
                 this.boundary.push(polygon);
             });
-            //console.log(this.boundary)
+            // create a border polygon that merges all the polygons
+            let currPoly = turf.polygon(toMergePolygons[0].geometry.coordinates[0])
+            for (let i = 1; i < toMergePolygons.length; i++) {
+                let toMerge = turf.polygon(toMergePolygons[i].geometry.coordinates[0])
+                let merged = turf.union(currPoly, toMerge);
+                currPoly = merged;
+            }
+            this.neighborhoodMergePoly = currPoly;
+            
             // Initialize Map Events
             this.leaflet.map.on('click', this.onMapAction);
             this.leaflet.map.on('dragend', (data) => this.onMapAction('getcenter'))
+            document.getElementById("search-condition").onchange = () => {
+                let selectElement = document.querySelector('#search-condition');
+                let output = selectElement.options[selectElement.selectedIndex].value;
+                if (output == 'Address') {
+                    $('#textbox_format').prop('placeholder', "e.g. 2115 Summit Avenue")
+                } else {
+                    $('#textbox_format').prop('placeholder', "e.g. 44.94116, -93.09406")
+                }
+            }
+            this.leaflet.map.on('moveend', () => {
+                for (let i = 1; i <= 17; i++) {
+                    if (this.checkMapBounds(i) == false) {
+                        $(`.${i}`).css("display", "none");
+                    } else {
+                        $(`.${i}`).css("display", "");
+                    }
+                }
+            })
         }).catch((error) => {
             console.log("Error:", error);
         });
@@ -421,10 +504,17 @@ export default {
 
     <div class="grid-container">
         <div class="grid-x">
+            <br>
+        </div>
+        <div class="grid-x">
             <div class="large-1 medium-1 small-0 cell buffer"></div>
             <div class="large-10 medium-10 small-12 cell search_format">
                 <input v-model="searchData" type="text" id="textbox_format" placeholder="e.g. 2115 Summit Avenue"
                     required>
+                <select name="search-condition" id="search-condition">
+                    <option value="Address">Address</option>
+                    <option value="Lat/Lon">Lat/Lon</option>
+                </select>
                 <button type="button" class="button" @click="submitSearch">Search</button>
             </div>
             <div class="large-1 medium-1 small-0 cell buffer"></div>
@@ -445,8 +535,7 @@ export default {
                             <th>Delete</th>
                         </tr>
                         <tr v-for="(element, index) in tableData"
-                            :class="(element.code >= 0 && element.code <= 299 || element.code >= 400 && element.code <= 499 || element.code >= 800 && element.code <= 899) ? 'violent' :
-                            (element.code >= 300 && element.code <= 399 || element.code >= 500 && element.code <= 699 || element.code >= 900 && element.code <= 999 || element.code >= 1400 && element.code <= 1499) ? 'property' : 'other'">
+                            :class="this.bindTableDisplayConditions(element)">
                             <td>{{ element.case_number }}</td>
                             <td>{{ element.date }}</td>
                             <td>{{ element.time }}</td>
@@ -485,6 +574,10 @@ export default {
 </template>
 
 <style>
+#search-condition {
+    width: 150px;
+}
+
 .main_container {
     background: radial-gradient(at bottom right, #d5dbd8 0, #d5dbd8 17.25px, rgba(213, 219, 216, 0.2) 17.25px, rgba(213, 219, 216, 0.2) 34.5px, rgba(213, 219, 216, 0.75) 34.5px, rgba(213, 219, 216, 0.75) 51.75px, rgba(213, 219, 216, 0.25) 51.75px, rgba(213, 219, 216, 0.25) 69px, rgba(213, 219, 216, 0.3) 69px, rgba(213, 219, 216, 0.3) 86.25px, rgba(213, 219, 216, 0.75) 86.25px, rgba(213, 219, 216, 0.75) 103.5px, rgba(213, 219, 216, 0.2) 103.5px, rgba(213, 219, 216, 0.2) 120.75px, transparent 120.75px, transparent 138px), radial-gradient(at top left, transparent 0, transparent 17.25px, rgba(213, 219, 216, 0.2) 17.25px, rgba(213, 219, 216, 0.2) 34.5px, rgba(213, 219, 216, 0.75) 34.5px, rgba(213, 219, 216, 0.75) 51.75px, rgba(213, 219, 216, 0.3) 51.75px, rgba(213, 219, 216, 0.3) 69px, rgba(213, 219, 216, 0.25) 69px, rgba(213, 219, 216, 0.25) 86.25px, rgba(213, 219, 216, 0.75) 86.25px, rgba(213, 219, 216, 0.75) 103.5px, rgba(213, 219, 216, 0.2) 103.5px, rgba(213, 219, 216, 0.2) 120.75px, #d5dbd8 120.75px, #d5dbd8 138px, transparent 138px, transparent 345px);
     background-blend-mode: multiply;

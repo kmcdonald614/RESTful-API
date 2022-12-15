@@ -2,7 +2,7 @@
 
 ## Implement the following to earn 45/60 points (grade: C)
 
- - [ ] Show a map using the Leaflet API
+ - [X] Show a map using the Leaflet API
 
     - [X] Pan and zoom available with mouse click-and-drag and scroll wheel interaction
     - [X] Limit pan and zoom so map does not display regions outside of St. Paul
@@ -11,33 +11,33 @@
     - [X] Have an input box and 'Go' button for a user to type a location (lat/  long coordinates, address, etc.)
     - [X] Implement the method that will use the searchbox or crime table click to update the map
     - [X] Add a map layer that will be cleared when new search is implemented, when someone scrolls
-    - [ ] Map should update when location is entered and 'Go' button pressed
+    - [X] Map should update when location is entered and 'Go' button pressed
     - [X] Make sure that previously added marker from search is cleared when a new search is implemented
-    - [ ] Input box text should update with new location (lat/long coordinates or address) when map is panned/zoomed
+    - [X] Input box text should update with new location (lat/long coordinates or address) when map is panned/zoomed
     - [X] Summarize and create a function that handles click of map and scoll functions of map when a new marker is placed and where it is placed in relation to the operation that is being selected
         - NOTE: updating once pan/zoom has ended is recommended - constantly updating this during a pan will overwhelm the system
     - [X] Use the Nominatim API (https://nominatim.org/release-docs/develop/api/Overview/ to convert between address and lat/long
-    - [ ] Clamp input values if lat/long is outside of St. Paul's bounding box
+    - [X] Clamp input values if lat/long is outside of St. Paul's bounding box
     - [X] Determine how to get current view map bounds and compare that to neighborhood tags location to determine what should be seen in the below table
-    - [ ] Have all Clicked, Scrolled and Search Bar Markers retrieve the same format of information amenity if it is one other wise street number, street name, zip, city, state, suburb, neighboorhood, latitude and longitude
+    - [X] Have all Clicked, Scrolled and Search Bar Markers retrieve the same format of information amenity if it is one other wise street number, street name, zip, city, state, suburb, neighboorhood, latitude and longitude
     - [X] add app.vue code to new main component];
     - [X] add number of total incidents from total 1000 imported in 
 - [ ] Retrieve data from your St. Paul Crime API
     - [X] By default, include 1,000 most recent crimes in the database
     - [X] Populate a table with one row per crime (use neighborhood_name rather than neighborhood_number, and incident_type rather than code)
-    - [ ] Update neighborhood tags display based on current location that is seen (use hint above)
+    - [X] Update neighborhood tags display based on current location that is seen (use hint above)
         - [X] Table should be ordered with most recent on top 
-        - [ ] Only show crimes that occurred in neighborhoods visible on the map
+        - [X] Only show crimes that occurred in neighborhoods visible on the map
             - HINT: get lat/long coordinates for the NW and SE corners of the map to use as the min/max lat/long coordinates
         - [X] Draw markers on the map for each neighborhood
-            - [ ] Marker should have popup to show the number of crimes committed in that neighborhood - out of total or out of 1000 imported?
+            - [X] Marker should have popup to show the number of crimes committed in that neighborhood - out of total or out of 1000 imported?
     - [X] New Incident upload form
         - [X] Create a user input form for users to add a new crime incident to the database (i.e. submit the PUT request)
         - [X] Ensure all fields are filled out before submitting request, otherwise show some error message
         - [X] Set up API PUT call so data makes it to the database
     - [ ] "About the Project" page
         - [ ] Short bio about each team member (including a photo)
-        Description of the tools (frameworks, APIs, etc.) you used to create the application
+        - [X] Description of the tools (frameworks, APIs, etc.) you used to create the application
         - [ ] Video demo of the application (2 - 4 minutes) - include voiceover
             Can natively embed or upload to YouTube and embed
         - [ ] Six interesting findings that you discovered using your application
@@ -87,7 +87,7 @@
     Note addresses are slightly obscured (e.g. '98X UNIVERSITY AV W' or 'THOMAS AV & VICTORIA')
         - [X] For addresses with an 'X' in the address number, you can replace it with a '0' (e.g. '90X UNIVERSITY AV W' would become '980 UNIVERSITY AV W'). Careful not to replace all X's though - there could be an X in the street name!
 
-- [ ] Format Badge Image to right size
+- [X] Format Badge Image to right size
 
 ## Tools Used
  - https://10015.io/tools/css-background-pattern-generator
@@ -210,3 +210,13 @@ To run Rest API and Dev environment:
 - 
 - isValid()	Boolean	
 - Returns true if the bounds are properly initialized.
+
+## Notes
+tools, frameworks, and libraries used in this project
+- Foundation - web page format to fit all screens
+- Vue - structure page was built in
+- leaflet.js - map
+- turf - polygon merge calculation to create border around St. Paul
+- nominatim - geolocation data
+- Splide - gallery on about page
+- jQuery - select dom elements

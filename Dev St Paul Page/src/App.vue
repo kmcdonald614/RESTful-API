@@ -59,7 +59,6 @@ export default {
                 </ul>
             </div>
         </div>
-        <br>
         <div v-show="view === 'map'">
             <Map :formCondition="this.formCondition"></Map>
         </div>

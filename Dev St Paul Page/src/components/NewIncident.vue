@@ -94,7 +94,7 @@ export default {
         <div class="grid-x grid-padding-x">
             <div class="large-2 medium-1 small-0 cell"></div>
             <div class="large-8 medium-10 small-12 cell">
-                <br>
+                <br><br>
 
                 <form onsubmit="return false">
                     <h1> New Incident Form: </h1>
