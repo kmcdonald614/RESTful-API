@@ -24,14 +24,14 @@ export default defineComponent({
                     bio: ``,
                     hobby: "???",
                     age: 0,
-                    image: "../../images/profile.png" // this should be a 200 by 200px image
+                    image: "../../images/profile.png" // this should be a 300 by 300px image
                 },
                 profile_3: {
                     name: "Marcus Haldane",
                     bio: ``,
                     hobby: "???",
                     age: 0,
-                    image: "../../images/profile.png" // should be a 200px by 200px image
+                    image: "../../images/profile.png" // should be a 300px by 300px image
                 }
             },
             observations: {

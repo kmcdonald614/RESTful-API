@@ -106,7 +106,6 @@ export default {
                 border-radius: 4rem 4rem 0;
                 transform: rotate(45deg);
                 border: 1px solid #FFFFFF`
-            // NOTE Add image overlay here
             const icon = L.divIcon({
                 className: "custom marker",
                 iconAnchor: [0, 24],
@@ -132,18 +131,15 @@ export default {
                 })
         },
         submitSearch() {
-
-
             if (this.leaflet.searchMarker !== null) {
                 this.leaflet.map.removeLayer(this.leaflet.searchMarker);
             }
             let selectElement = document.querySelector('#search-condition');
             let output = selectElement.options[selectElement.selectedIndex].value;
-            
-
             if (output == 'Address') {
-                console.log('check address')
-                 this.getJSON(`https://nominatim.openstreetmap.org/search?q='${this.searchData}, St. Paul, Minnesota'&format=json&limit=1&accept-language=en&countrycodes=us`)
+                // console.log('check address')
+                 this.getJSON(`https://nominatim.openstreetmap.org/search?q='${this.searchData}, St. Paul, 
+                 Minnesota'&format=json&limit=1&accept-language=en&countrycodes=us`)
                     .then((data) => {
                         let lat = data[0].lat
                         let lng = data[0].lon
@@ -315,9 +311,9 @@ export default {
             });
         },
         createMarker(message, coords, markerColor, typeMarker) {
-            let marker = new L.marker(coords, { icon: this.customMapTag(markerColor) });
+            let marker = new L.marker(coords, { icon: this.customMapTag(markerColor), center: false });
             marker._id = 'marker';
-            if (typeMarker != 'Neighborhood') {
+            if (typeMarker != 'Neighborhood' || typeMarker != 'CrimeMarker') {
                 this.leaflet.searchMarker = marker;
             }
             marker.bindPopup(message, { closeButton: true });
@@ -370,6 +366,9 @@ export default {
                 this.searchData = `${data.address.amenity}`
                 $('#search-condition').prop('selectedIndex', 0)
                 return;
+            } else if (data.address.man_made != undefined){
+                this.searchData = `${data.address.man_made}`
+                $('#search-condition').prop('selectedIndex', 0)
             } else if (data.address.road != undefined) {
                 let streetAdd = data.address.road;
                 if (data.address.house_number != undefined) {
@@ -423,16 +422,18 @@ export default {
             return undefined;
         },
         bindTableDisplayConditions(element) {
-            let returnString = ""
-            if (element.code >= 0 && element.code <= 299 || element.code >= 400 && element.code <= 499 || element.code >= 800 && element.code <= 899) {
-                returnString += 'violent'
-            } else if (element.code >= 300 && element.code <= 399 || element.code >= 500 && element.code <= 699 || element.code >= 900 && element.code <= 999 || element.code >= 1400 && element.code <= 1499) {
-                returnString += 'property'
-            } else {
-                returnString += 'other'
-            }
+            let returnString = this.checkTableDisplayConditions(element);
             return `${returnString} ${element.neighborhood_number}`;
-        },
+        }, 
+        checkTableDisplayConditions(element) {
+            if (element.code >= 0 && element.code <= 299 || element.code >= 400 && element.code <= 499 || element.code >= 800 && element.code <= 899) {
+                return 'violent'
+            } else if (element.code >= 300 && element.code <= 399 || element.code >= 500 && element.code <= 699 || element.code >= 900 && element.code <= 999 || element.code >= 1400 && element.code <= 1499) {
+                return 'property'
+            } else {
+                return 'other'
+            }
+        }
     },
     created() {
         this.getData('', '', '')
@@ -492,7 +493,13 @@ export default {
                     }
                 }
             })
-
+            
+            this.leaflet.map.on('zoomend', () => {
+                // if (this.leaflet.searchMarker !== null) {
+                    // this.leaflet.map.removeLayer(this.leaflet.searchMarker);
+                // }
+                // this.leaflet.searchMarker.addTo(this.leaflet.map);
+            })
         }).catch((error) => {
             console.log("Error:", error);
         });
@@ -502,7 +509,6 @@ export default {
 </script>
 
 <template>
-
     <div class="grid-container">
         <div class="grid-x">
             <div style="height: 20px;"></div>
@@ -524,6 +530,7 @@ export default {
             <div id="leafletmap" class="large-10 medium-10 small-12 cell"></div>
             <div class="large-1 medium-1 small-0 cell buffer"></div>
         </div>
+        <!-- UI insert here -->
         <div class="grid-x grid-padding-x" style="padding: 15px;">
             <div class="large-12 medium-12 small-12 cell table_format Flipped">
                 <div style="padding: 5px;"></div>
@@ -545,7 +552,7 @@ export default {
                             <td>{{ element.police_grid }}</td>
                             <td>{{ element.neighborhood_name }}</td>
                             <!-- make it into a link that will redirect to neighborhood marker -->
-                            <td>{{ element.block }}</td>
+                            <td><button @click="">{{ element.block }}</button></td>
                             <!-- make it into a link that will redirect map to exact lat and lon location when clicked -->
                             <td><button @click="deleteRecord(element.case_number, index)">DELETE</button></td>
                         </tr>
@@ -569,9 +576,6 @@ export default {
             </div>
         </div>
     </div>
-
-
-
 </template>
 
 <style>
