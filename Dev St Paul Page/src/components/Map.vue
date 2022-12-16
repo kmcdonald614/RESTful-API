@@ -122,18 +122,16 @@ export default {
                     this.updateSearchBar(data);
                     if (data != null || data != undefined) {
                         for (let key in data.address) {
-                            messageArr += `${key}: ${data.address[key]} <br>`;
+                            if (key != 'ISO3166-2-lvl4' && key != 'country_code') {
+                                messageArr += `${key.slice(0, 1).toUpperCase() + key.slice(1)}: ${data.address[key]} <br>`;
+                            }
                         }
-                    } else {
-                        messageArr = `Latitude: ${lat} <br> Longitude: ${lng}`;
                     }
+                    messageArr += `Latitude: ${lat} <br> Longitude: ${lng}`;
                     callback(messageArr)
                 })
         },
         submitSearch() {
-            if (this.leaflet.searchMarker !== null) {
-                this.leaflet.map.removeLayer(this.leaflet.searchMarker);
-            }
             let selectElement = document.querySelector('#search-condition');
             let output = selectElement.options[selectElement.selectedIndex].value;
             if (output == 'Address') {
@@ -289,9 +287,6 @@ export default {
                 return coords; 
         },
         onMapAction(data) {
-            if (this.leaflet.searchMarker !== null) {
-                this.leaflet.map.removeLayer(this.leaflet.searchMarker);
-            }
             let coords = null;
             if (data == 'getcenter') {
                 coords = this.leaflet.map.getCenter();
@@ -311,13 +306,20 @@ export default {
             });
         },
         createMarker(message, coords, markerColor, typeMarker) {
-            let marker = new L.marker(coords, { icon: this.customMapTag(markerColor), center: false });
-            marker._id = 'marker';
-            if (typeMarker != 'Neighborhood' || typeMarker != 'CrimeMarker') {
-                this.leaflet.searchMarker = marker;
+            let marker;
+            if (this.leaflet.searchMarker == null) {
+                marker = new L.marker(coords, { icon: this.customMapTag(markerColor), center: false });
+                marker._id = 'marker';
+                marker.bindPopup(message, { closeButton: true });
+                marker.addTo(this.leaflet.map);
+                if (typeMarker != 'Neighborhood') {
+                    this.leaflet.searchMarker = marker;
+                }
+            } else {
+                this.leaflet.searchMarker.setPopupContent(message, {closeButton: true});
+                this.leaflet.searchMarker.setLatLng(coords);
             }
-            marker.bindPopup(message, { closeButton: true });
-            marker.addTo(this.leaflet.map);
+           
         },
         markerPopUp(dataArr) {
             let message = '';
@@ -492,13 +494,6 @@ export default {
                         $(`.${i}`).css("display", "");
                     }
                 }
-            })
-            
-            this.leaflet.map.on('zoomend', () => {
-                // if (this.leaflet.searchMarker !== null) {
-                    // this.leaflet.map.removeLayer(this.leaflet.searchMarker);
-                // }
-                // this.leaflet.searchMarker.addTo(this.leaflet.map);
             })
         }).catch((error) => {
             console.log("Error:", error);
