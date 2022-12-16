@@ -17,21 +17,21 @@ export default defineComponent({
                     semester.`,
                     hobby: "Photography",
                     age: 25,
-                    image: "../../images/foundation.svg"
+                    image: "../../images/Tucker Johnson.png"
                 },
                 profile_2: {
                     name: "Kevin McDonald",
-                    bio: ` `,
+                    bio: ``,
                     hobby: "???",
                     age: 0,
-                    image: "../../images/foundation.svg" // this should be a 200 by 200px image
+                    image: "../../images/profile.png" // this should be a 200 by 200px image
                 },
                 profile_3: {
                     name: "Marcus Haldane",
                     bio: ``,
                     hobby: "???",
                     age: 0,
-                    image: "../../images/foundation.svg" // should be a 200px by 200px image
+                    image: "../../images/profile.png" // should be a 200px by 200px image
                 }
             },
             observations: {
@@ -92,8 +92,7 @@ export default defineComponent({
                     description: `Nominatim, otherwise referred to as OpenStreetMap (OSM) 
                     is a collaborative project to create a free editable database of the world. 
                     This database was queried through the nominatim API to retrieve data about 
-                    the St. Paul, Minnesota area in which appeared in the pop up boxes when 
-                    the location marker on the map was clicked. `,
+                    the St. Paul, Minnesota area. The marker popups displays this data.`,
                     assetName: "Nominatim"
                 },
                 element_5: {
@@ -118,8 +117,7 @@ export default defineComponent({
                     description: `Derived from AngularJS, Vue is a performant and versatile
                     framework for building web user interfaces. It builds on top of standard 
                     HTML, CSS, and JavaScript to make development easier and less cumbersome. 
-                    It was used in the main organization of this project where there is a component
-                    for each page that exists in the single page application.`,
+                    It was used in the main organization of this project.`,
                     assetName: "Vue"
                 }
             }
@@ -206,9 +204,12 @@ export default defineComponent({
                         <h4>Frameworks/APIs</h4>
                     </div>
                 </div>
+            </div>
+            <div class="large-1 medium-1 small-0 cell"></div>
+            <div class="large-10 medium-10 small-12 cell">
                 <div class="flex">
                     <div class="gallery-size">
-                        <Splide :options="{ rewind: true, drag: 'free' }" aria-label="Vue Splide Example">
+                        <Splide :options="{ rewind: true, drag: 'free', width:800}" aria-label="Vue Splide Example">
                             <SplideSlide v-for="element in logo">
                                 <div class="grid-x">
                                     <div class="image large-1 medium-1 small-1 cell"></div>
@@ -235,14 +236,13 @@ export default defineComponent({
 
 <style>
 .gallery-size {
-    max-width: 1000px;
+    /* max-width: 1000px; */
     display: flex;
-    justify-content: center;
+    justify-content: center; 
 }
 
 .logo {
     height: 300px;
-    width: fit-content;
     object-fit: cover;
     background-color: rgba(255, 255, 255, 0.5);
 }
@@ -295,8 +295,10 @@ h3 {
 }
 
 .bio_image {
-    height: 200px;
-    width: auto;
+    height:fit-content;
+    max-height: 300px;
+    border-radius: 50%;
+    background-color: rgba(255,255,255,0.7);
 }
 
 .table-data {

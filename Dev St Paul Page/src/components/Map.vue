@@ -395,7 +395,7 @@ export default {
             })
         },
         markerInPolygon(coords, polygonCoords) {
-            console.log(coords, polygonCoords)
+            // console.log(coords, polygonCoords)
             var polyPoints = polygonCoords;
             var x = coords.lat, y = coords.lng;
             var inside = false;
@@ -492,6 +492,7 @@ export default {
                     }
                 }
             })
+
         }).catch((error) => {
             console.log("Error:", error);
         });
@@ -504,7 +505,7 @@ export default {
 
     <div class="grid-container">
         <div class="grid-x">
-            <br>
+            <div style="height: 20px;"></div>
         </div>
         <div class="grid-x">
             <div class="large-1 medium-1 small-0 cell buffer"></div>

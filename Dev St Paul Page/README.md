@@ -88,6 +88,7 @@
         - [X] For addresses with an 'X' in the address number, you can replace it with a '0' (e.g. '90X UNIVERSITY AV W' would become '980 UNIVERSITY AV W'). Careful not to replace all X's though - there could be an X in the street name!
 
 - [X] Format Badge Image to right size
+- [ ] Look into map tag adjustment bug -- think have something to do either on leaflet.api side or with layer misconfiguration
 
 ## Tools Used
  - https://10015.io/tools/css-background-pattern-generator
