@@ -292,6 +292,8 @@ export default {
                  Minnesota'&format=json&limit=1&accept-language=en&countrycodes=us`)
                  //message to pop up after clicking on block(should display date,time,incident, and a delete button)
                  let message=this.markerPopUp([`Date: ${this.date}`,`Time: ${this.time}`,`Incident: ${this.incident_type}`]);
+
+                 //get the coordinates of the crime incident at the selected block
                 let lng=data[0].lon;
                 let lat = data[0].lat;
                 let coords = [lat, lng];
