@@ -326,17 +326,48 @@ export default {
                     case 'ST':
                         elementArr[element] = 'Street'
                         break;
-                    case '':
+                    case 'PL':
+                        elementArr[element] = 'Place'
+                        break;
+                    case 'W':
+                        elementArr[element] = 'West'
+                        break;
+                    case 'N':
+                        elementArr[element] = 'North'
+                        break;
+                    case 'E':
+                        elementArr[element] = 'East'
+                        break;
+                    case 'S':
+                        elementArr[element] = 'South'
+                        break;
+                    case 'DR':
+                        elementArr[element] = 'Drive'
+                        break;
+                    case 'PKWY':
+                        elementArr[element] = 'Parkway'
+                        break;
+                    case 'R':
+                        elementArr[element] = 'Road'
+                        break;
+                    case '00':
                         elementArr[element] = ''
                         break;
-                    case '':
+                    case '0':
                         elementArr[element] = ''
+                        break;
+                    case '000':
+                        elementArr[element] = ''
+                        break;
+                    case 'STPAUL':
+                        elementArr[element] = 'St. Paul'
                         break;
                     default:
                     // nothing
                 }
             }
-            this.getJSON(`https://nominatim.openstreetmap.org/search?q='${element.block}, St. Paul, 
+            let search = elementArr.join(' ');
+            this.getJSON(`https://nominatim.openstreetmap.org/search?q='${search}, St. Paul, 
                  Minnesota'&format=json&limit=1&accept-language=en&countrycodes=us`)
                 .then((data) => {
                     if (data.length == 0) {
