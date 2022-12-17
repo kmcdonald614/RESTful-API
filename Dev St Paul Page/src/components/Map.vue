@@ -1,5 +1,8 @@
 <script>
 import * as turf from '@turf/turf';
+// Import toRaw element to get to 'original' map value
+// for tag updates
+import { toRaw } from 'vue';
 export default {
     props: {
         formCondition: false
@@ -25,7 +28,7 @@ export default {
             searchData: "",
             totalCrimes: [],
             boundary: [],
-            neighborhoodMergePoly: [],
+            neighborhoodMergePoly: [], 
             leaflet: {
                 map: null,
                 center: {
@@ -146,7 +149,7 @@ export default {
                                 let coords = [lat, lng];
                                 let message = this.markerPopUp([`${addressData}`]);
                                 this.createMarker(message, coords, '#708ce0', 'Search');
-                                this.leaflet.map.flyTo(coords, 14);
+                                toRaw(this.leaflet.map).flyTo(coords, 14);
                             }
                         });
 
@@ -165,7 +168,7 @@ export default {
                         let coords = [lat, lng];
                         let message = this.markerPopUp([`${addressData}`]);
                         this.createMarker(message, coords, '#708ce0', 'Search');
-                        this.leaflet.map.flyTo(coords, 14);
+                        toRaw(this.leaflet.map).flyTo(coords, 14);
                     }
                 })
             }
@@ -289,10 +292,11 @@ export default {
         onMapAction(data) {
             let coords = null;
             if (data == 'getcenter') {
-                coords = this.leaflet.map.getCenter();
+                coords = toRaw(this.leaflet.map).getCenter();
             } else {
                 coords = data.latlng;
-                this.leaflet.map.flyTo(coords, 14);
+                toRaw(this.leaflet.map).flyTo(coords, 14);
+                this.leaflet.zoom = 14;
             }
 
             if (this.markerInNeighborhood(coords) === undefined) {
@@ -307,11 +311,18 @@ export default {
         },
         createMarker(message, coords, markerColor, typeMarker) {
             let marker;
+            // console.log(coords)
             if (this.leaflet.searchMarker == null) {
-                marker = new L.marker(coords, { icon: this.customMapTag(markerColor), center: false });
+                marker = new L.marker(coords, { icon: this.customMapTag(markerColor), center: false});
                 marker._id = 'marker';
-                marker.bindPopup(message, { closeButton: true });
-                marker.addTo(this.leaflet.map);
+               marker.bindPopup(message, { closeButton: true});
+                marker.addTo(toRaw(this.leaflet.map));
+                // marker.on('click', () => {
+                //     L.popup()
+                //     .setLatLng(coords)
+                //     .setPopupContent(message)
+                //     .openOn(toRaw(this.leaflet.map));
+                // })
                 if (typeMarker != 'Neighborhood') {
                     this.leaflet.searchMarker = marker;
                 }
@@ -330,7 +341,7 @@ export default {
         },
         checkMapBounds(id) {
             let point = L.latLng(this.leaflet.neighborhood_markers[id-1].location);
-            let bounds = this.leaflet.map.getBounds();
+            let bounds = toRaw(this.leaflet.map).getBounds();
             let north = bounds.getNorth();
             let south = bounds.getSouth();
             let west = bounds.getWest();
@@ -356,7 +367,12 @@ export default {
                 this.searchData = `${data.address.historic}`
                 $('#search-condition').prop('selectedIndex', 0)
                 return;
-            } else if (data.address.building != undefined){
+            } else if (data.address.shop != undefined) {
+                this.searchData = `${data.address.shop}`
+                $('#search-condition').prop('selectedIndex', 0)
+                return;
+            } 
+            else if (data.address.building != undefined){
                 this.searchData = `${data.address.building}`
                 $('#search-condition').prop('selectedIndex', 0)
                 return;
@@ -495,6 +511,8 @@ export default {
                     }
                 }
             })
+            console.log(this.leaflet.map)
+            
         }).catch((error) => {
             console.log("Error:", error);
         });
