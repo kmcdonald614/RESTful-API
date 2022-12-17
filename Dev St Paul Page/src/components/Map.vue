@@ -28,7 +28,7 @@ export default {
             searchData: "",
             totalCrimes: [],
             boundary: [],
-            neighborhoodMergePoly: [], 
+            neighborhoodMergePoly: [],
             leaflet: {
                 map: null,
                 center: {
@@ -97,7 +97,7 @@ export default {
                 });
             });
         },
-        customMapTag(color) {
+        customMapTag(color, marker_name) {
             const cssStyle = `
                 background-color: ${color};
                 width: 1.75rem;
@@ -114,7 +114,7 @@ export default {
                 iconAnchor: [0, 24],
                 labelAnchor: [-6, 0],
                 popupAnchor: [0, -36],
-                html: `<span style="${cssStyle}" />`
+                html: `<span id="${marker_name}" style="${cssStyle}" />`
             })
             return icon;
         },
@@ -139,7 +139,7 @@ export default {
             let output = selectElement.options[selectElement.selectedIndex].value;
             if (output == 'Address') {
                 // console.log('check address')
-                 this.getJSON(`https://nominatim.openstreetmap.org/search?q='${this.searchData}, St. Paul, 
+                this.getJSON(`https://nominatim.openstreetmap.org/search?q='${this.searchData}, St. Paul, 
                  Minnesota'&format=json&limit=1&accept-language=en&countrycodes=us`)
                     .then((data) => {
                         let lat = data[0].lat
@@ -180,7 +180,7 @@ export default {
 
             Promise.all([this.getJSON(codeHTTP), this.getJSON(hoodHTTP), this.getJSON(incidentHTTP)])
                 .then((data) => {
-                    [this.codes, this.neighborhoods, this.incidents] = [data[0], data[1], data[2]];                    
+                    [this.codes, this.neighborhoods, this.incidents] = [data[0], data[1], data[2]];
                     this.getIncidentsMetaData(data[2][0])
                     this.countIncidents(() => {
                         this.addNeighborhoodTags();
@@ -271,47 +271,53 @@ export default {
         },
         clampOutOfBounds(coords) {
             let pointX = coords.lng;
-                let pointY = coords.lat;
-                let leastDistance = null;
-                let distanceIndex = -1;
-                for (let i = 0; i < this.neighborhoodMergePoly.geometry.coordinates[0].length; i++) {
-                    let currCoords = this.neighborhoodMergePoly.geometry.coordinates[0][i];
-                    let currX = currCoords[0]
-                    let currY = currCoords[1]
-                    let distance = Math.sqrt((Math.pow(pointX-currX, 2))+(Math.pow(pointY-currY, 2)));
-                    if (leastDistance === null) leastDistance = distance;
-                    if (distance < leastDistance) {
-                        leastDistance = distance;
-                        distanceIndex = i;
-                    }   
+            let pointY = coords.lat;
+            let leastDistance = null;
+            let distanceIndex = -1;
+            for (let i = 0; i < this.neighborhoodMergePoly.geometry.coordinates[0].length; i++) {
+                let currCoords = this.neighborhoodMergePoly.geometry.coordinates[0][i];
+                let currX = currCoords[0]
+                let currY = currCoords[1]
+                let distance = Math.sqrt((Math.pow(pointX - currX, 2)) + (Math.pow(pointY - currY, 2)));
+                if (leastDistance === null) leastDistance = distance;
+                if (distance < leastDistance) {
+                    leastDistance = distance;
+                    distanceIndex = i;
                 }
-                let newCoords = this.neighborhoodMergePoly.geometry.coordinates[0][distanceIndex];
-                coords = {lat: newCoords[1], lng: newCoords[0]}
-                return coords; 
+            }
+            let newCoords = this.neighborhoodMergePoly.geometry.coordinates[0][distanceIndex];
+            coords = { lat: newCoords[1], lng: newCoords[0] }
+            return coords;
         },
 
-        markerchanger(element,data){
-            this.getJSON(`https://nominatim.openstreetmap.org/search?q='${this.searchData}, St. Paul, 
+        markerchanger(element, index) {
+            this.getJSON(`https://nominatim.openstreetmap.org/search?q='${element.block}, St. Paul, 
                  Minnesota'&format=json&limit=1&accept-language=en&countrycodes=us`)
-                 //message to pop up after clicking on block(should display date,time,incident, and a delete button)
-                 let message=this.markerPopUp([`Date: ${this.date}`,`Time: ${this.time}`,`Incident: ${this.incident_type}`]);
+                .then((data) => {
+                    if (data.length == 0) {
+                        alert("Sorry, at this time we cannot locate that incident on the map. Please try again later.")
+                        return;
+                    }
+                    //message to pop up after clicking on block(should display date,time,incident, and a delete button)
+                    let message = this.markerPopUp([`Date: ${element.date}`, `Time: ${element.time}`, `Incident: ${element.incident}`, `<button onClick="this.deleteRecord(${element.case_number}, ${index})">DELETE</button>`]);
 
-                 //get the coordinates of the crime incident at the selected block
-                let lng=data[0].lon;
-                let lat = data[0].lat;
-                let coords = [lat, lng];
+                    //get the coordinates of the crime incident at the selected block
+                    let lng = data[0].lon;
+                    let lat = data[0].lat;
+                    let coords = [lat, lng];
 
-                //Create the marker with the appropriate color based on the type of crime.
-                if (element.code >= 0 && element.code <= 299 || element.code >= 400 && element.code <= 499 || element.code >= 800 && element.code <= 899) {
-                this.createMarker(message,coords,'#A44A3F','Crime Marker');
-            } else if (element.code >= 300 && element.code <= 399 || element.code >= 500 && element.code <= 699 || element.code >= 900 && element.code <= 999 || element.code >= 1400 && element.code <= 1499) {
-                this.createMarker(message,coords,'#D19C1D','Crime Marker');
-            } else {
-                this.createMarker(message,coords,'#32936F','Crime Marker');
-            }
+                    //Create the marker with the appropriate color based on the type of crime.
+                    if (element.code >= 0 && element.code <= 299 || element.code >= 400 && element.code <= 499 || element.code >= 800 && element.code <= 899) {
+                        this.createMarker(message, coords, '#A44A3F', 'Search');
+                    } else if (element.code >= 300 && element.code <= 399 || element.code >= 500 && element.code <= 699 || element.code >= 900 && element.code <= 999 || element.code >= 1400 && element.code <= 1499) {
+                        this.createMarker(message, coords, '#D19C1D', 'Search');
+                    } else {
+                        this.createMarker(message, coords, '#32936F', 'Search');
+                    }
 
-                this.leaflet.map.flyTo(coords, 14);
-                        
+                    toRaw(this.leaflet.map).flyTo(coords, 14);
+                    this.searchData = element.block;
+                })
         },
 
         onMapAction(data) {
@@ -338,24 +344,20 @@ export default {
             let marker;
             // console.log(coords)
             if (this.leaflet.searchMarker == null) {
-                marker = new L.marker(coords, { icon: this.customMapTag(markerColor), center: false});
+                marker = new L.marker(coords, { icon: this.customMapTag(markerColor, typeMarker), center: false });
                 marker._id = 'marker';
-               marker.bindPopup(message, { closeButton: true});
+                marker.bindPopup(message, { closeButton: true });
                 marker.addTo(toRaw(this.leaflet.map));
-                // marker.on('click', () => {
-                //     L.popup()
-                //     .setLatLng(coords)
-                //     .setPopupContent(message)
-                //     .openOn(toRaw(this.leaflet.map));
-                // })
                 if (typeMarker != 'Neighborhood') {
                     this.leaflet.searchMarker = marker;
                 }
             } else {
-                this.leaflet.searchMarker.setPopupContent(message, {closeButton: true});
+                this.leaflet.searchMarker.setPopupContent(message, { closeButton: true });
                 this.leaflet.searchMarker.setLatLng(coords);
+                console.log(markerColor)
+                $('span#Search').css('backgroundColor', markerColor)
             }
-           
+
         },
         markerPopUp(dataArr) {
             let message = '';
@@ -365,26 +367,26 @@ export default {
             return message;
         },
         checkMapBounds(id) {
-            let point = L.latLng(this.leaflet.neighborhood_markers[id-1].location);
+            let point = L.latLng(this.leaflet.neighborhood_markers[id - 1].location);
             let bounds = toRaw(this.leaflet.map).getBounds();
             let north = bounds.getNorth();
             let south = bounds.getSouth();
             let west = bounds.getWest();
             let east = bounds.getEast();
-           
+
             let latlngs = [[west, north],
-                           [east, north], 
-                           [east, south], 
-                           [west, south]];
-            let polygon = L.polygon(latlngs);            
+            [east, north],
+            [east, south],
+            [west, south]];
+            let polygon = L.polygon(latlngs);
             return this.markerInPolygon(point, polygon.getLatLngs()[0]);
         },
-        updateSearchBar(data) {            
+        updateSearchBar(data) {
             if (data.address.leisure != undefined) {
                 this.searchData = `${data.address.leisure}`
                 $('#search-condition').prop('selectedIndex', 0)
                 return;
-            } else if (data.address.tourism != undefined){
+            } else if (data.address.tourism != undefined) {
                 this.searchData = `${data.address.tourism}`
                 $('#search-condition').prop('selectedIndex', 0)
                 return;
@@ -396,8 +398,8 @@ export default {
                 this.searchData = `${data.address.shop}`
                 $('#search-condition').prop('selectedIndex', 0)
                 return;
-            } 
-            else if (data.address.building != undefined){
+            }
+            else if (data.address.building != undefined) {
                 this.searchData = `${data.address.building}`
                 $('#search-condition').prop('selectedIndex', 0)
                 return;
@@ -405,11 +407,11 @@ export default {
                 this.searchData = `${data.address.aeroway}`
                 $('#search-condition').prop('selectedIndex', 0)
                 return;
-            } else if (data.address.amenity != undefined){
+            } else if (data.address.amenity != undefined) {
                 this.searchData = `${data.address.amenity}`
                 $('#search-condition').prop('selectedIndex', 0)
                 return;
-            } else if (data.address.man_made != undefined){
+            } else if (data.address.man_made != undefined) {
                 this.searchData = `${data.address.man_made}`
                 $('#search-condition').prop('selectedIndex', 0)
             } else if (data.address.road != undefined) {
@@ -467,7 +469,7 @@ export default {
         bindTableDisplayConditions(element) {
             let returnString = this.checkTableDisplayConditions(element);
             return `${returnString} ${element.neighborhood_number}`;
-        }, 
+        },
         checkTableDisplayConditions(element) {
             if (element.code >= 0 && element.code <= 299 || element.code >= 400 && element.code <= 499 || element.code >= 800 && element.code <= 899) {
                 return 'violent'
@@ -514,7 +516,7 @@ export default {
                 currPoly = merged;
             }
             this.neighborhoodMergePoly = currPoly;
-            
+
             // Initialize Map Events
             this.leaflet.map.on('click', this.onMapAction);
             this.leaflet.map.on('dragend', (data) => this.onMapAction('getcenter'))
@@ -536,8 +538,6 @@ export default {
                     }
                 }
             })
-            console.log(this.leaflet.map)
-            
         }).catch((error) => {
             console.log("Error:", error);
         });
@@ -580,8 +580,7 @@ export default {
                             }}</th>
                             <th>Delete</th>
                         </tr>
-                        <tr v-for="(element, index) in tableData"
-                            :class="this.bindTableDisplayConditions(element)">
+                        <tr v-for="(element, index) in tableData" :class="this.bindTableDisplayConditions(element)">
                             <td>{{ element.case_number }}</td>
                             <td>{{ element.date }}</td>
                             <td>{{ element.time }}</td>
@@ -590,9 +589,9 @@ export default {
                             <td>{{ element.police_grid }}</td>
                             <td>{{ element.neighborhood_name }}</td>
                             <!-- make it into a link that will redirect to neighborhood marker -->
-                            <td><button @click="">{{ element.block }}</button></td>
+                            <td><button @click="this.markerchanger(element, index)">{{ element.block }}</button></td>
                             <!-- make it into a link that will redirect map to exact lat and lon location when clicked -->
-                            <td><button @click="deleteRecord(element.case_number, index)">DELETE</button></td>
+                            <td><button @click="this.deleteRecord(element.case_number, index)">DELETE</button></td>
                         </tr>
                     </table>
                 </div>
