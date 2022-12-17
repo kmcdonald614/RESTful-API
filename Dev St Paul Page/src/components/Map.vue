@@ -9,7 +9,7 @@ export default {
     },
     watch: {
         formCondition() {
-            console.log(this.formCondition)
+            //console.log(this.formCondition)
             // If true then repopulate the data
             if (this.formCondition == true) {
                 this.tableData = [];
@@ -162,7 +162,7 @@ export default {
                 let value = this.searchData.replace(/[\(\)]/g, '').split(',');
                 let lat = parseFloat(value[0]);
                 let lng = parseFloat(value[1]);
-                console.log(lat, lng)
+                //console.log(lat, lng)
                 this.getAddress(lat, lng, (addressData) => {
                     if (lat != undefined || lng != undefined) {
                         let coords = [lat, lng];
@@ -259,10 +259,19 @@ export default {
                 this.headerData.push(key)
             }
         },
-        deleteRecord(case_number, index) {
+        deleteRecord(case_number, index, color) {
+            if ((color == '#A44A3F' || color == '#D19C1D' || color == '#32936F') && this.leaflet.searchMarker != null) {
+                toRaw(this.leaflet.map).removeLayer(this.leaflet.searchMarker)
+                this.leaflet.searchMarker = null;
+            }
             let url = "http://localhost:8000/remove-incident"
             this.uploadJSON("DELETE", url, { case_number: case_number }).then((data) => {
-                this.tableData.splice(index, 1);
+                //this.tableData.splice(index, 1);
+                const $table = $('table');
+                // Select the row you want to remove (assuming it has an id of "row-123")
+                const $row = $table.find(`#${index}`);
+                // Remove the row
+                $row.remove();
                 alert("The record has been deleted...");
             })
                 .catch((err) => {
@@ -290,7 +299,43 @@ export default {
             return coords;
         },
 
-        markerchanger(element, index) {
+        markerchanger(element, index, type) {
+            let color = '';
+            //Create the marker with the appropriate color based on the type of crime.
+            if (element.code >= 0 && element.code <= 299 || element.code >= 400 && element.code <= 499 || element.code >= 800 && element.code <= 899) {
+                color = '#A44A3F'
+            } else if (element.code >= 300 && element.code <= 399 || element.code >= 500 && element.code <= 699 || element.code >= 900 && element.code <= 999 || element.code >= 1400 && element.code <= 1499) {
+                color = '#D19C1D'
+            } else {
+                color = '#32936F'
+            }
+            if (type == 'table') {
+                this.deleteRecord(element.case_number, index, color);
+                return;
+            }
+            let elementArr = element.block.split(' ');
+            for (let element in elementArr) {
+                let value = elementArr[element];
+                switch (value) {
+                    case 'LNDG':
+                        elementArr[element] = 'Landing'
+                        break;
+                    case 'AVE':
+                        elementArr[element] = 'Avenue'
+                        break;
+                    case 'ST':
+                        elementArr[element] = 'Street'
+                        break;
+                    case '':
+                        elementArr[element] = ''
+                        break;
+                    case '':
+                        elementArr[element] = ''
+                        break;
+                    default:
+                    // nothing
+                }
+            }
             this.getJSON(`https://nominatim.openstreetmap.org/search?q='${element.block}, St. Paul, 
                  Minnesota'&format=json&limit=1&accept-language=en&countrycodes=us`)
                 .then((data) => {
@@ -298,23 +343,27 @@ export default {
                         alert("Sorry, at this time we cannot locate that incident on the map. Please try again later.")
                         return;
                     }
-                    //message to pop up after clicking on block(should display date,time,incident, and a delete button)
-                    let message = this.markerPopUp([`Date: ${element.date}`, `Time: ${element.time}`, `Incident: ${element.incident}`, `<button onClick="this.deleteRecord(${element.case_number}, ${index})">DELETE</button>`]);
-
                     //get the coordinates of the crime incident at the selected block
                     let lng = data[0].lon;
                     let lat = data[0].lat;
                     let coords = [lat, lng];
+                    let paragraph = document.createElement('p');
+                    let span = document.createElement('span');
+                    span.innerHTML = `Date: ${element.date} <br>
+                                 Time: ${element.time} <br>
+                                 Incident: ${element.incident} <br>`;
+                    var button = document.createElement('button');
+                    paragraph.appendChild(span);
+                    paragraph.appendChild(button);
+                    button.innerHTML = 'DELETE';
+                    //message to pop up after clicking on block(should display date,time,incident, and a delete button)
+                    let message = this.markerPopUp([`Date: ${element.date}`, `Time: ${element.time}`, `Incident: ${element.incident}`]);
 
-                    //Create the marker with the appropriate color based on the type of crime.
-                    if (element.code >= 0 && element.code <= 299 || element.code >= 400 && element.code <= 499 || element.code >= 800 && element.code <= 899) {
-                        this.createMarker(message, coords, '#A44A3F', 'Search');
-                    } else if (element.code >= 300 && element.code <= 399 || element.code >= 500 && element.code <= 699 || element.code >= 900 && element.code <= 999 || element.code >= 1400 && element.code <= 1499) {
-                        this.createMarker(message, coords, '#D19C1D', 'Search');
-                    } else {
-                        this.createMarker(message, coords, '#32936F', 'Search');
-                    }
-
+                    message = paragraph;
+                    this.createMarker(message, coords, color, 'Search');
+                    button.addEventListener('click', () => {
+                        this.deleteRecord(element.case_number, index, color);
+                    })
                     toRaw(this.leaflet.map).flyTo(coords, 14);
                     this.searchData = element.block;
                 })
@@ -352,9 +401,9 @@ export default {
                     this.leaflet.searchMarker = marker;
                 }
             } else {
-                this.leaflet.searchMarker.setPopupContent(message, { closeButton: true });
-                this.leaflet.searchMarker.setLatLng(coords);
-                console.log(markerColor)
+                toRaw(this.leaflet.searchMarker).setPopupContent(message, { closeButton: true });
+                toRaw(this.leaflet.searchMarker).setLatLng(coords);
+                //console.log(markerColor)
                 $('span#Search').css('backgroundColor', markerColor)
             }
 
@@ -537,7 +586,8 @@ export default {
                         $(`.${i}`).css("display", "");
                     }
                 }
-            })
+            });
+
         }).catch((error) => {
             console.log("Error:", error);
         });
@@ -580,7 +630,8 @@ export default {
                             }}</th>
                             <th>Delete</th>
                         </tr>
-                        <tr v-for="(element, index) in tableData" :class="this.bindTableDisplayConditions(element)">
+                        <tr v-for="(element, index) in tableData" :id="index"
+                            :class="this.bindTableDisplayConditions(element)">
                             <td>{{ element.case_number }}</td>
                             <td>{{ element.date }}</td>
                             <td>{{ element.time }}</td>
@@ -589,9 +640,10 @@ export default {
                             <td>{{ element.police_grid }}</td>
                             <td>{{ element.neighborhood_name }}</td>
                             <!-- make it into a link that will redirect to neighborhood marker -->
-                            <td><button @click="this.markerchanger(element, index)">{{ element.block }}</button></td>
+                            <td><button @click="this.markerchanger(element, index, 'popup')">{{ element.block
+                            }}</button></td>
                             <!-- make it into a link that will redirect map to exact lat and lon location when clicked -->
-                            <td><button @click="this.deleteRecord(element.case_number, index)">DELETE</button></td>
+                            <td><button @click="this.markerchanger(element, index, 'table')">DELETE</button></td>
                         </tr>
                     </table>
                 </div>
