@@ -261,7 +261,7 @@ export default {
         },
         deleteRecord(case_number, index, color) {
             if ((color == '#A44A3F' || color == '#D19C1D' || color == '#32936F') && this.leaflet.searchMarker != null) {
-                toRaw(this.leaflet.map).removeLayer(this.leaflet.searchMarker)
+                toRaw(this.leaflet.map).removeLayer(toRaw(this.leaflet.searchMarker))
                 this.leaflet.searchMarker = null;
             }
             let url = "http://localhost:8000/remove-incident"
@@ -316,9 +316,14 @@ export default {
             let elementArr = element.block.split(' ');
             for (let element in elementArr) {
                 let value = elementArr[element];
+                if (value == 'AND') {
+                    elementArr = elementArr.slice(0, element);
+                    console.log(elementArr)
+                    break; 
+                }
                 switch (value) {
                     case 'LNDG':
-                        elementArr[element] = 'Landing'
+                        elementArr[element] = 'Lane'
                         break;
                     case 'AVE':
                         elementArr[element] = 'Avenue'
@@ -407,7 +412,6 @@ export default {
             } else {
                 coords = data.latlng;
                 toRaw(this.leaflet.map).flyTo(coords, 14);
-                this.leaflet.zoom = 14;
             }
 
             if (this.markerInNeighborhood(coords) === undefined) {
@@ -423,7 +427,7 @@ export default {
         createMarker(message, coords, markerColor, typeMarker) {
             let marker;
             // console.log(coords)
-            if (this.leaflet.searchMarker == null) {
+            if (toRaw(this.leaflet.searchMarker) == null) {
                 marker = new L.marker(coords, { icon: this.customMapTag(markerColor, typeMarker), center: false });
                 marker._id = 'marker';
                 marker.bindPopup(message, { closeButton: true });
@@ -447,7 +451,7 @@ export default {
             return message;
         },
         checkMapBounds(id) {
-            let point = L.latLng(this.leaflet.neighborhood_markers[id - 1].location);
+            let point = L.latLng(toRaw(this.leaflet.neighborhood_markers[id - 1].location));
             let bounds = toRaw(this.leaflet.map).getBounds();
             let north = bounds.getNorth();
             let south = bounds.getSouth();
@@ -510,7 +514,7 @@ export default {
         },
         addNeighborhoodTags() {
             // Add neighborhood Tags
-            $(this.leaflet.neighborhood_markers).each((key, value) => {
+            $(toRaw(this.leaflet.neighborhood_markers)).each((key, value) => {
                 this.getJSON(`http://localhost:8000/neighborhoods?id=${key + 1}`).then((data) => {
                     let message = this.markerPopUp([`<strong>${data[0].neighborhood_name}</strong>`,
                     `Latitude: ${value.location[0]}`, `Longitude: ${value.location[1]}`, `Total Crimes: ${this.totalCrimes[key + 1]}`]);
