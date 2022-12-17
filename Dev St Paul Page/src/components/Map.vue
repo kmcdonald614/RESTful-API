@@ -286,6 +286,29 @@ export default {
                 coords = {lat: newCoords[1], lng: newCoords[0]}
                 return coords; 
         },
+
+        markerchanger(element,data){
+            this.getJSON(`https://nominatim.openstreetmap.org/search?q='${this.searchData}, St. Paul, 
+                 Minnesota'&format=json&limit=1&accept-language=en&countrycodes=us`)
+                 //message to pop up after clicking on block(should display date,time,incident, and a delete button)
+                 let message=this.markerPopUp([`Date: ${this.date}`,`Time: ${this.time}`,`Incident: ${this.incident_type}`]);
+                let lng=data[0].lon;
+                let lat = data[0].lat;
+                let coords = [lat, lng];
+
+                //Create the marker with the appropriate color based on the type of crime.
+                if (element.code >= 0 && element.code <= 299 || element.code >= 400 && element.code <= 499 || element.code >= 800 && element.code <= 899) {
+                this.createMarker(message,coords,'#A44A3F','Crime Marker');
+            } else if (element.code >= 300 && element.code <= 399 || element.code >= 500 && element.code <= 699 || element.code >= 900 && element.code <= 999 || element.code >= 1400 && element.code <= 1499) {
+                this.createMarker(message,coords,'#D19C1D','Crime Marker');
+            } else {
+                this.createMarker(message,coords,'#32936F','Crime Marker');
+            }
+
+                this.leaflet.map.flyTo(coords, 14);
+                        
+        },
+
         onMapAction(data) {
             let coords = null;
             if (data == 'getcenter') {
