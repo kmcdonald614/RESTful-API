@@ -80,15 +80,15 @@
 - [X] Add a 'delete' button for each crime in the table
     - Clicking this button should submit a DELETE request to remove the incident from the database
 
-- [ ] Add a marker to the map at exact crime location when selected from the table
-    - [ ] Make marker a different color / icon than the markers for the total crimes per neighborhood
+- [X] Add a marker to the map at exact crime location when selected from the table
+    - [X] Make marker a different color / icon than the markers for the total crimes per neighborhood
         - have all three be a simple badge icon that are shaded the same colors of the table crimes...
-    - [ ] Create a popup with date, time, incident, and delete button
+    - [X] Create a popup with date, time, incident, and delete button
     Note addresses are slightly obscured (e.g. '98X UNIVERSITY AV W' or 'THOMAS AV & VICTORIA')
         - [X] For addresses with an 'X' in the address number, you can replace it with a '0' (e.g. '90X UNIVERSITY AV W' would become '980 UNIVERSITY AV W'). Careful not to replace all X's though - there could be an X in the street name!
 
 - [X] Format Badge Image to right size
-- [ ] Look into map tag adjustment bug -- think have something to do either on leaflet.api side or with layer misconfiguration
+- [X] Look into map tag adjustment bug -- think have something to do either on leaflet.api side or with layer misconfiguration
 
 ## Tools Used
  - https://10015.io/tools/css-background-pattern-generator
@@ -221,3 +221,5 @@ tools, frameworks, and libraries used in this project
 - nominatim - geolocation data
 - Splide - gallery on about page
 - jQuery - select dom elements
+
+- https://stackoverflow.com/questions/49881093/vue-js-v-for-doesnt-rerender-content-when-array-changed

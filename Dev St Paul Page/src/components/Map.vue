@@ -181,10 +181,12 @@ export default {
             Promise.all([this.getJSON(codeHTTP), this.getJSON(hoodHTTP), this.getJSON(incidentHTTP)])
                 .then((data) => {
                     [this.codes, this.neighborhoods, this.incidents] = [data[0], data[1], data[2]];
-                    this.getIncidentsMetaData(data[2][0])
-                    this.countIncidents(() => {
-                        this.addNeighborhoodTags();
-                    });
+                    if (this.tableData.length == 0) {
+                        this.getIncidentsMetaData(data[2][0])
+                        this.countIncidents(() => {
+                            this.addNeighborhoodTags();
+                        });
+                    }
                     this.tableData = this.incidents;
 
                     this.tableData = this.incidents.map((element) => {
@@ -266,16 +268,18 @@ export default {
             }
             let url = "http://localhost:8000/remove-incident"
             this.uploadJSON("DELETE", url, { case_number: case_number }).then((data) => {
-                //this.tableData.splice(index, 1);
+                // this.tableData.splice(index, 1);
                 const $table = $('table');
                 // Select the row you want to remove (assuming it has an id of "row-123")
                 const $row = $table.find(`#${index}`);
                 // Remove the row
                 $row.remove();
+                this.scrollToTop();
                 alert("The record has been deleted...");
             })
                 .catch((err) => {
-                    alert("The record does not exist or has already beed deleted.")
+                    this.scrollToTop();
+                    alert("The record does not exist or has already been deleted.")
                 })
         },
         clampOutOfBounds(coords) {
@@ -319,7 +323,7 @@ export default {
                 if (value == 'AND') {
                     elementArr = elementArr.slice(0, element);
                     console.log(elementArr)
-                    break; 
+                    break;
                 }
                 switch (value) {
                     case 'LNDG':
@@ -385,7 +389,8 @@ export default {
                     let coords = [lat, lng];
                     let paragraph = document.createElement('p');
                     let span = document.createElement('span');
-                    span.innerHTML = `Date: ${element.date} <br>
+                    span.innerHTML = `<strong>Block: ${element.block}</strong> <br>
+                                 Date: ${element.date} <br>
                                  Time: ${element.time} <br>
                                  Incident: ${element.incident} <br>`;
                     var button = document.createElement('button');
@@ -402,6 +407,7 @@ export default {
                     })
                     toRaw(this.leaflet.map).flyTo(coords, 14);
                     this.searchData = element.block;
+                    this.scrollToTop();
                 })
         },
 
@@ -561,6 +567,13 @@ export default {
                 return 'property'
             } else {
                 return 'other'
+            }
+        },
+        scrollToTop() {
+            const c = document.documentElement.scrollTop || document.body.scrollTop;
+            if (c > 0) {
+                window.requestAnimationFrame(this.scrollToTop);
+                window.scrollTo(0, c - c / 8);
             }
         }
     },
