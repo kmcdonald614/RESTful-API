@@ -29,6 +29,32 @@ export default {
             totalCrimes: [],
             boundary: [],
             neighborhoodMergePoly: [],
+            filterUI: {
+                limitUI: "",
+                startDate: "",
+                endDate: "",
+                isOpen: false,
+                neighborhood: {
+                    isOpen: false,
+                    options: [
+                    ]
+                },
+                incidents: {
+                    isOpen: false,
+                    options: [
+                        { value: "Murder/Homicide", label: "Murder/Homicide", checked: false },
+                        { value: "Rape", label: "Rape", checked: false },
+                        { value: "Assault", label: "Aggravated Assault", checked: false },
+                        { value: "Burglary/Theft General", label: "Burglary/Theft General", checked: false },
+                        { value: "Burglary/Theft Auto", label: "Burglary/Theft Auto", checked: false},
+                        { value: "Domestic Assault", label: "Domestic Assault", checked: false },
+                        { value: "Arson/Criminal Damage", label: "Arson/Criminal Damage", checked: false },
+                        { value: "Narcotics", label: "Narcodics", checked: false },
+                        { value: "Firearm Discharge", label: "Firearm Discharge", checked: false},
+                        { value: "Other", label: "Other", checked: false },
+                    ]
+                }
+            },
             leaflet: {
                 map: null,
                 center: {
@@ -185,6 +211,10 @@ export default {
                         this.getIncidentsMetaData(data[2][0])
                         this.countIncidents(() => {
                             this.addNeighborhoodTags();
+                        });
+                    }else {
+                        this.countIncidents(()=>{
+                            this.updateNeighborhoodTags();
                         });
                     }
                     this.tableData = this.incidents;
@@ -441,6 +471,7 @@ export default {
                 if (typeMarker != 'Neighborhood') {
                     this.leaflet.searchMarker = marker;
                 }
+                return marker;
             } else {
                 toRaw(this.leaflet.searchMarker).setPopupContent(message, { closeButton: true });
                 toRaw(this.leaflet.searchMarker).setLatLng(coords);
@@ -524,7 +555,20 @@ export default {
                 this.getJSON(`http://localhost:8000/neighborhoods?id=${key + 1}`).then((data) => {
                     let message = this.markerPopUp([`<strong>${data[0].neighborhood_name}</strong>`,
                     `Latitude: ${value.location[0]}`, `Longitude: ${value.location[1]}`, `Total Crimes: ${this.totalCrimes[key + 1]}`]);
-                    this.createMarker(message, [value.location[0], value.location[1]], '#586ba4', 'Neighborhood');
+                    this.leaflet.neighborhood_markers[key].marker = this.createMarker(message, [value.location[0], value.location[1]], '#586ba4', 'Neighborhood');
+                    this.filterUI.neighborhood.options.push({value: `${key+1}`, label:`${data[0].neighborhood_name}`, checked: false})
+                })
+            })
+        },
+        updateNeighborhoodTags() {
+            // Add neighborhood Tags
+            $(toRaw(this.leaflet.neighborhood_markers)).each((key, value) => {
+                this.getJSON(`http://localhost:8000/neighborhoods?id=${key + 1}`).then((data) => {
+                    let message = this.markerPopUp([`<strong>${data[0].neighborhood_name}</strong>`,
+                    `Latitude: ${value.location[0]}`, `Longitude: ${value.location[1]}`, `Total Crimes: ${this.totalCrimes[key + 1]}`]);
+                    // this.createMarker(message, [value.location[0], value.location[1]], '#586ba4', 'Neighborhood');
+                    //console.log(this.leaflet.neighborhood_markers[key], message)
+                    toRaw(this.leaflet.neighborhood_markers[key].marker).setPopupContent(message, { closeButton: true });
                 })
             })
         },
@@ -575,6 +619,79 @@ export default {
                 window.requestAnimationFrame(this.scrollToTop);
                 window.scrollTo(0, c - c / 8);
             }
+        },
+        tryUI() {
+            // get the current conditions of all checkboxes, date inputs and textbox
+            let incidentQuery = ""
+            // textbox
+            if (this.filterUI.limitUI != "") {
+                incidentQuery += `limit=${this.filterUI.limitUI}`;
+            }
+            let neighborhoodString = "";
+            for (let element in this.filterUI.neighborhood.options) {
+                if (this.filterUI.neighborhood.options[element].checked == true) {
+                    if (neighborhoodString == "") {
+                        neighborhoodString = "&neighborhood=" + this.filterUI.neighborhood.options[element].value;
+                    } else {
+                        neighborhoodString += "," + this.filterUI.neighborhood.options[element].value;
+                    }
+                }
+            }
+            if (neighborhoodString != "") {
+                incidentQuery += neighborhoodString;
+            }
+            if (this.filterUI.startDate != "") {
+                incidentQuery += "&start_date="+this.filterUI.startDate;
+            }
+            if (this.filterUI.endDate != "") {
+                incidentQuery += "&end_date=" + this.filterUI.endDate;
+            }
+
+            console.log(this.filterUI.startDate)
+            console.log(this.filterUI.endDate)
+
+            // console.log(filterUI.startDate)
+            // console.log(filterUI.endDate)
+            // let incidentString = ""
+            // for (let element in this.filterUI.incident.options) {
+                // let currValue = this.filterUI.incident.options[element].value;
+                // let valueToAdd = ""
+                // switch(currValue) {
+                    // case 1:
+                        // valueToAdd += ""; 
+                        //  break;
+                    // case 2:
+                        // valueToAdd += ""; 
+                        //  break;
+                    // case 3:
+                        // valueToAdd += "";
+                        //  break;
+                    // case 4:
+                        // valueToAdd += ""; 
+                        //  break;
+                    // case 5:
+                        // valueToAdd += ""; 
+                        //  break;
+                    // case 6:
+                        // valueToAdd += "";
+                        //  break;
+                    // case 7:
+                        // valueToAdd += ""; 
+                        //  break;
+                    // case 8:
+                        // valueToAdd += ""; 
+                        //  break;
+                    // case 9:
+                        // valueToAdd += "";
+                        //  break;
+                    // default: 
+                        // valueToAdd += ""
+                // }
+                // if (incidentQuery == "") {
+                    // incidentQuery += "&"
+                // }
+            // }
+            this.getData('', '', `${incidentQuery}`);
         }
     },
     created() {
@@ -667,6 +784,52 @@ export default {
             <div class="large-1 medium-1 small-0 cell buffer"></div>
         </div>
         <!-- UI insert here -->
+        <div class="grid-x grid-padding-x">
+            <div class="large-12 medium-12 small-12 cell">
+                <button @click="filterUI.isOpen = !filterUI.isOpen">Filters</button>
+                <div id="ui-filters" v-if="filterUI.isOpen">
+                    
+                        <label for="input">Maximum Crimes Imported: </label>
+                        <input v-model="filterUI.limitUI" id="limit-text-bar" type="number" placeholder="0">
+                    
+                    <div>
+                        <button @click="filterUI.neighborhood.isOpen = !filterUI.neighborhood.isOpen">Neighborhoods</button>
+                        <transition name="fade">
+                            <ul v-if="filterUI.neighborhood.isOpen" class="dropdown" id="drop-down-UI">
+                                <li v-for="option in filterUI.neighborhood.options" :key="option.value"
+                                    class="dropdown-item">
+                                    <label id="checkmark-neighborhood">
+                                        <input type="checkbox" v-model="option.checked" />
+                                        {{ option.label }}
+                                    </label>
+                                </li>
+                            </ul>
+                        </transition>
+                        <br>
+                        <button @click="filterUI.incidents.isOpen = !filterUI.incidents.isOpen">Incidents</button>
+                        <transition name="fade">
+                            <ul v-if="filterUI.incidents.isOpen" class="dropdown" id="drop-down-UI">
+                                <li v-for="option in filterUI.incidents.options" :key="option.value"
+                                    class="dropdown-item">
+                                    <label id="checkmark-neighborhood">
+                                        <input type="checkbox" v-model="option.checked" />
+                                        {{ option.label }}
+                                    </label>
+                                </li>
+                            </ul>
+                        </transition>
+                        <div>
+    <label for="start-date">Start Date:</label>
+    <input id="start-date" type="date" v-model="filterUI.startDate" />
+    <br />
+    <label for="end-date">End Date:</label>
+    <input id="end-date" type="date" v-model="filterUI.endDate" />
+  </div>
+                        <button @click="this.tryUI()">UPDATE</button>
+                    </div>
+                </div>
+            </div>
+        </div>
         <div class="grid-x grid-padding-x" style="padding: 15px;">
             <div class="large-12 medium-12 small-12 cell table_format Flipped">
                 <div style="padding: 5px;"></div>
@@ -828,5 +991,46 @@ img {
     padding-left: 2rem;
     padding-right: 2rem;
     margin: auto;
+}
+
+.dropdown-item {
+    display: flex;
+    align-items: center;
+}
+
+.fade-enter-active,
+.fade-leave-active {
+    transition: opacity 0.5s;
+}
+
+.fade-enter,
+.fade-leave-to {
+    opacity: 0;
+}
+
+#drop-down-UI {
+    list-style: none;
+    padding: 0;
+    width: 250px;
+    background-color: rgba(150, 150, 150, 0.5);
+    border-radius: 10px;
+}
+
+#checkmark-neighborhood {
+    margin-top: 5px;
+    padding-left: 10px;
+}
+
+#ui-filters {
+    margin: 10px;
+    background-color: rgb(200, 200, 200);
+}
+
+#limit-text-bar {
+    width: 200px;
+}
+
+label {
+    margin-top: 10px;
 }
 </style>

@@ -42,7 +42,9 @@ export default defineComponent({
                 },
                 observation_2: {
                     author: "Tucker Johnson",
-                    observation: `some observation`
+                    observation: `In all of St. Paul in the Thanksgiving of 2021 there were only three violent crimes. Two of 
+                    which were family/child related. It was also interesting to note that there were two times as many proactive 
+                    police visits in certain neighborhoods like North End on Christmas Eve compared to Christmas day in 2021.`
                 },
                 observation_3: {
                     author: "Kevin McDonald",
