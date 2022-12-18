@@ -21,10 +21,13 @@ export default defineComponent({
                 },
                 profile_2: {
                     name: "Kevin McDonald",
-                    bio: ``,
-                    hobby: "???",
-                    age: 0,
-                    image: "../../images/profile.png" // this should be a 300 by 300px image
+                    bio: `When I transferred to St.Thomas, I knew I wanted to go into computer science, but had no idea what
+                    specialty or field I wanted to enter. Now I know that I would like to go into Artifcial Intelligence. I plan to 
+                    go for my masters in Software Engineering after I graduate this semester. This will more than likely happen
+                    once I find a job and then go part time.`,
+                    hobby: "Golf",
+                    age: 28,
+                    image: "../../images/Kevin McDonald.jpg" // this should be a 300 by 300px image
                 },
                 profile_3: {
                     name: "Marcus Haldane",
@@ -48,11 +51,14 @@ export default defineComponent({
                 },
                 observation_3: {
                     author: "Kevin McDonald",
-                    observation: `some observation`
+                    observation: `One thing that I had noticed was that Union Park had the 3rd highest amount of crimes,
+                    which is concering since it's very close to our school.`
                 },
                 observation_4: {
                     author: "Kevin McDonald",
-                    observation: `some observation`
+                    observation: `One observation I had noticed was how little of crime happens in Summit Hill, and the
+                    crimes that were committed were nonviolent crimes. Most of the crimes were thefts which makes sense
+                    considering the nice houses in that area may draw appeal for potential burglary.`
                 },
                 observation_5: {
                     author: "Marcus Haldane",
