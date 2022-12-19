@@ -37,7 +37,7 @@ export default defineComponent({
                     pull factor, and continues to work towards his degree to this day.`,
                     hobby: "Skiing, Snowshoeing, Biking, 3D Printing",
                     age: 24,
-                    image: "../../images/Marcus_Haldane.png" // should be a 300px by 300px image
+                    image: "../../images/Marcus_Haldane.jpg" // should be a 300px by 300px image
                 }
                 
             },
@@ -64,11 +64,14 @@ export default defineComponent({
                 },
                 observation_5: {
                     author: "Marcus Haldane",
-                    observation: `some observation`
+                    observation: `One positive observation I noticed was that when the filter for 100 code crimes was applied 
+                    there were very few results returned. Given the accuracy of the reporting of homicide, 
+                    this would be excellent news as it would mean that this sort of violent crime is rare.`
                 },
                 observation_6: {
                     author: "Marcus Haldane",
-                    observation: `some observation`
+                    observation: `One negative observation I had was the amount of property crime including theft and arson is 
+                    very high.`
                 }
             },
             logo: {
