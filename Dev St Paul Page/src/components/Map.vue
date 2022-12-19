@@ -20,6 +20,8 @@ export default {
     },
     data() {
         return {
+            newStartDate: [],
+            newEndDate: [],
             codes: [],
             neighborhoods: [],
             incidents: [],
@@ -29,32 +31,6 @@ export default {
             totalCrimes: [],
             boundary: [],
             neighborhoodMergePoly: [],
-            filterUI: {
-                limitUI: "",
-                startDate: "",
-                endDate: "",
-                isOpen: false,
-                neighborhood: {
-                    isOpen: false,
-                    options: [
-                    ]
-                },
-                incidents: {
-                    isOpen: false,
-                    options: [
-                        { value: "Murder/Homicide", label: "Murder/Homicide", checked: false },
-                        { value: "Rape", label: "Rape", checked: false },
-                        { value: "Assault", label: "Aggravated Assault", checked: false },
-                        { value: "Burglary/Theft General", label: "Burglary/Theft General", checked: false },
-                        { value: "Burglary/Theft Auto", label: "Burglary/Theft Auto", checked: false},
-                        { value: "Domestic Assault", label: "Domestic Assault", checked: false },
-                        { value: "Arson/Criminal Damage", label: "Arson/Criminal Damage", checked: false },
-                        { value: "Narcotics", label: "Narcodics", checked: false },
-                        { value: "Firearm Discharge", label: "Firearm Discharge", checked: false},
-                        { value: "Other", label: "Other", checked: false },
-                    ]
-                }
-            },
             leaflet: {
                 map: null,
                 center: {
@@ -87,7 +63,21 @@ export default {
                     { location: [44.937705, -93.136997], marker: null },
                     { location: [44.949203, -93.093739], marker: null }
                 ]
-            }
+            }, 
+            maxResultset: null,
+            check100: null, 
+            check200: null, 
+            check300: null, 
+            check400: null, 
+            check500: null, 
+            check600: null, 
+            check800: null, 
+            check900: null, 
+            check1400: null, 
+            check1800: null, 
+            check2619: null, 
+            check3100: null, 
+            check9000: null 
         }
     },
     methods: {
@@ -178,7 +168,6 @@ export default {
                                 toRaw(this.leaflet.map).flyTo(coords, 14);
                             }
                         });
-
                     })
                     .catch((err) => {
                         console.log(err)
@@ -203,7 +192,6 @@ export default {
             let codeHTTP = `http://localhost:8000/codes?${codesQuery}`;
             let hoodHTTP = `http://localhost:8000/neighborhoods?${hoodQuery}`;
             let incidentHTTP = `http://localhost:8000/incidents?${incidentQuery}`;
-
             Promise.all([this.getJSON(codeHTTP), this.getJSON(hoodHTTP), this.getJSON(incidentHTTP)])
                 .then((data) => {
                     [this.codes, this.neighborhoods, this.incidents] = [data[0], data[1], data[2]];
@@ -212,13 +200,8 @@ export default {
                         this.countIncidents(() => {
                             this.addNeighborhoodTags();
                         });
-                    }else {
-                        this.countIncidents(()=>{
-                            this.updateNeighborhoodTags();
-                        });
                     }
                     this.tableData = this.incidents;
-
                     this.tableData = this.incidents.map((element) => {
                         let code = element.code;
                         let neighborhood_number = element.neighborhood_number;
@@ -332,7 +315,6 @@ export default {
             coords = { lat: newCoords[1], lng: newCoords[0] }
             return coords;
         },
-
         markerchanger(element, index, type) {
             let color = '';
             //Create the marker with the appropriate color based on the type of crime.
@@ -429,7 +411,6 @@ export default {
                     button.innerHTML = 'DELETE';
                     //message to pop up after clicking on block(should display date,time,incident, and a delete button)
                     let message = this.markerPopUp([`Date: ${element.date}`, `Time: ${element.time}`, `Incident: ${element.incident}`]);
-
                     message = paragraph;
                     this.createMarker(message, coords, color, 'Search');
                     button.addEventListener('click', () => {
@@ -440,7 +421,6 @@ export default {
                     this.scrollToTop();
                 })
         },
-
         onMapAction(data) {
             let coords = null;
             if (data == 'getcenter') {
@@ -449,7 +429,6 @@ export default {
                 coords = data.latlng;
                 toRaw(this.leaflet.map).flyTo(coords, 14);
             }
-
             if (this.markerInNeighborhood(coords) === undefined) {
                 coords = this.clampOutOfBounds(coords);
             }
@@ -471,14 +450,12 @@ export default {
                 if (typeMarker != 'Neighborhood') {
                     this.leaflet.searchMarker = marker;
                 }
-                return marker;
             } else {
                 toRaw(this.leaflet.searchMarker).setPopupContent(message, { closeButton: true });
                 toRaw(this.leaflet.searchMarker).setLatLng(coords);
                 //console.log(markerColor)
                 $('span#Search').css('backgroundColor', markerColor)
             }
-
         },
         markerPopUp(dataArr) {
             let message = '';
@@ -494,7 +471,6 @@ export default {
             let south = bounds.getSouth();
             let west = bounds.getWest();
             let east = bounds.getEast();
-
             let latlngs = [[west, north],
             [east, north],
             [east, south],
@@ -555,20 +531,7 @@ export default {
                 this.getJSON(`http://localhost:8000/neighborhoods?id=${key + 1}`).then((data) => {
                     let message = this.markerPopUp([`<strong>${data[0].neighborhood_name}</strong>`,
                     `Latitude: ${value.location[0]}`, `Longitude: ${value.location[1]}`, `Total Crimes: ${this.totalCrimes[key + 1]}`]);
-                    this.leaflet.neighborhood_markers[key].marker = this.createMarker(message, [value.location[0], value.location[1]], '#586ba4', 'Neighborhood');
-                    this.filterUI.neighborhood.options.push({value: `${key+1}`, label:`${data[0].neighborhood_name}`, checked: false})
-                })
-            })
-        },
-        updateNeighborhoodTags() {
-            // Add neighborhood Tags
-            $(toRaw(this.leaflet.neighborhood_markers)).each((key, value) => {
-                this.getJSON(`http://localhost:8000/neighborhoods?id=${key + 1}`).then((data) => {
-                    let message = this.markerPopUp([`<strong>${data[0].neighborhood_name}</strong>`,
-                    `Latitude: ${value.location[0]}`, `Longitude: ${value.location[1]}`, `Total Crimes: ${this.totalCrimes[key + 1]}`]);
-                    // this.createMarker(message, [value.location[0], value.location[1]], '#586ba4', 'Neighborhood');
-                    //console.log(this.leaflet.neighborhood_markers[key], message)
-                    toRaw(this.leaflet.neighborhood_markers[key].marker).setPopupContent(message, { closeButton: true });
+                    this.createMarker(message, [value.location[0], value.location[1]], '#586ba4', 'Neighborhood');
                 })
             })
         },
@@ -620,78 +583,108 @@ export default {
                 window.scrollTo(0, c - c / 8);
             }
         },
-        tryUI() {
-            // get the current conditions of all checkboxes, date inputs and textbox
-            let incidentQuery = ""
-            // textbox
-            if (this.filterUI.limitUI != "") {
-                incidentQuery += `limit=${this.filterUI.limitUI}`;
+        addFilter(){
+            
+            let newFilter = 'code=';
+            let isFirst = true;
+            if(this.check100){
+                newFilter += '100'
+                isFirst = false;
             }
-            let neighborhoodString = "";
-            for (let element in this.filterUI.neighborhood.options) {
-                if (this.filterUI.neighborhood.options[element].checked == true) {
-                    if (neighborhoodString == "") {
-                        neighborhoodString = "&neighborhood=" + this.filterUI.neighborhood.options[element].value;
-                    } else {
-                        neighborhoodString += "," + this.filterUI.neighborhood.options[element].value;
-                    }
+            if(this.check200){
+                if(!isFirst){
+                    newFilter += ','    
                 }
+                newFilter += '200'
+                isFirst = false;
             }
-            if (neighborhoodString != "") {
-                incidentQuery += neighborhoodString;
+            if(this.check300){
+                if(!isFirst){
+                    newFilter += ','    
+                }
+                newFilter += '300'
+                isFirst = false;
             }
-            if (this.filterUI.startDate != "") {
-                incidentQuery += "&start_date="+this.filterUI.startDate;
+            if(this.check400){
+                if(!isFirst){
+                    newFilter += ','    
+                }
+                newFilter += '400'
+                isFirst = false;
             }
-            if (this.filterUI.endDate != "") {
-                incidentQuery += "&end_date=" + this.filterUI.endDate;
+            if(this.check500){
+                if(!isFirst){
+                    newFilter += ','    
+                }
+                newFilter += '500'
+                isFirst = false;
             }
-
-            console.log(this.filterUI.startDate)
-            console.log(this.filterUI.endDate)
-
-            // console.log(filterUI.startDate)
-            // console.log(filterUI.endDate)
-            // let incidentString = ""
-            // for (let element in this.filterUI.incident.options) {
-                // let currValue = this.filterUI.incident.options[element].value;
-                // let valueToAdd = ""
-                // switch(currValue) {
-                    // case 1:
-                        // valueToAdd += ""; 
-                        //  break;
-                    // case 2:
-                        // valueToAdd += ""; 
-                        //  break;
-                    // case 3:
-                        // valueToAdd += "";
-                        //  break;
-                    // case 4:
-                        // valueToAdd += ""; 
-                        //  break;
-                    // case 5:
-                        // valueToAdd += ""; 
-                        //  break;
-                    // case 6:
-                        // valueToAdd += "";
-                        //  break;
-                    // case 7:
-                        // valueToAdd += ""; 
-                        //  break;
-                    // case 8:
-                        // valueToAdd += ""; 
-                        //  break;
-                    // case 9:
-                        // valueToAdd += "";
-                        //  break;
-                    // default: 
-                        // valueToAdd += ""
-                // }
-                // if (incidentQuery == "") {
-                    // incidentQuery += "&"
-                // }
-            // }
-            this.getData('', '', `${incidentQuery}`);
+            if(this.check600){
+                if(!isFirst){
+                    newFilter += ','    
+                }
+                newFilter += '600'
+                isFirst = false;
+            }
+            if(this.check800){
+                if(!isFirst){
+                    newFilter += ','    
+                }
+                newFilter += '800'
+                isFirst = false;
+            }
+            if(this.check900){
+                if(!isFirst){
+                    newFilter += ','    
+                }
+                newFilter += '900'
+                isFirst = false;
+            }
+            if(this.check1400){
+                if(!isFirst){
+                    newFilter += ','    
+                }
+                newFilter += '1400'
+                isFirst = false;
+            }
+            if(this.check1800){
+                if(!isFirst){
+                    newFilter += ','    
+                }
+                newFilter += '1800'
+                isFirst = false;
+            }
+            if(this.check2619){
+                if(!isFirst){
+                    newFilter += ','    
+                }
+                newFilter += '2619'
+                isFirst = false;
+            }
+            if(this.check3100){
+                if(!isFirst){
+                    newFilter += ','    
+                }
+                newFilter += '3100'
+                isFirst = false;
+            }
+            if(this.check9000){
+                if(!isFirst){
+                    newFilter += ','    
+                }
+                newFilter += '9000'
+                isFirst = false;
+            }
+            if(!this.maxResultset == null){
+                if(isFirst){
+                newFilter = 'limit=' + this.maxResultset;
+                } else {
+                    newFilter += '&limit=' + this.maxResultset;
+                }
+            } 
+            
+            // alert(newFilter);
+            this.getData('', '', newFilter)
         }
     },
     created() {
@@ -730,7 +723,6 @@ export default {
                 currPoly = merged;
             }
             this.neighborhoodMergePoly = currPoly;
-
             // Initialize Map Events
             this.leaflet.map.on('click', this.onMapAction);
             this.leaflet.map.on('dragend', (data) => this.onMapAction('getcenter'))
@@ -752,13 +744,11 @@ export default {
                     }
                 }
             });
-
         }).catch((error) => {
             console.log("Error:", error);
         });
     }
 }
-
 </script>
 
 <template>
@@ -784,52 +774,77 @@ export default {
             <div class="large-1 medium-1 small-0 cell buffer"></div>
         </div>
         <!-- UI insert here -->
-        <div class="grid-x grid-padding-x">
-            <div class="large-12 medium-12 small-12 cell">
-                <button @click="filterUI.isOpen = !filterUI.isOpen">Filters</button>
-                <div id="ui-filters" v-if="filterUI.isOpen">
-                    
-                        <label for="input">Maximum Crimes Imported: </label>
-                        <input v-model="filterUI.limitUI" id="limit-text-bar" type="number" placeholder="0">
-                    
-                    <div>
-                        <button @click="filterUI.neighborhood.isOpen = !filterUI.neighborhood.isOpen">Neighborhoods</button>
-                        <transition name="fade">
-                            <ul v-if="filterUI.neighborhood.isOpen" class="dropdown" id="drop-down-UI">
-                                <li v-for="option in filterUI.neighborhood.options" :key="option.value"
-                                    class="dropdown-item">
-                                    <label id="checkmark-neighborhood">
-                                        <input type="checkbox" v-model="option.checked" />
-                                        {{ option.label }}
-                                    </label>
-                                </li>
-                            </ul>
-                        </transition>
-                        <br>
-                        <button @click="filterUI.incidents.isOpen = !filterUI.incidents.isOpen">Incidents</button>
-                        <transition name="fade">
-                            <ul v-if="filterUI.incidents.isOpen" class="dropdown" id="drop-down-UI">
-                                <li v-for="option in filterUI.incidents.options" :key="option.value"
-                                    class="dropdown-item">
-                                    <label id="checkmark-neighborhood">
-                                        <input type="checkbox" v-model="option.checked" />
-                                        {{ option.label }}
-                                    </label>
-                                </li>
-                            </ul>
-                        </transition>
-                        <div>
-    <label for="start-date">Start Date:</label>
-    <input id="start-date" type="date" v-model="filterUI.startDate" />
-    <br />
-    <label for="end-date">End Date:</label>
-    <input id="end-date" type="date" v-model="filterUI.endDate" />
-  </div>
-                        <button @click="this.tryUI()">UPDATE</button>
-                    </div>
-                </div>
-            </div>
+        <div>
+            <br>
+            <form @submit.prevent="addFilter">
+                <p>Filter By: </p><br>
+                <!-- <input type="checkbox" id="criteria1" name="criteria1">
+                <label for="criteria1"> Case Number Range</label> -->
+
+                <!-- Date Criteria -->                
+                <label for="startDate">Start Date:</label>
+                <input v-model="newStartDate" type="date" id="startDate">
+                <br>
+                <label for="endDate">End Date:</label>
+                <input v-model="newEndDate" type="date" id="endDate">
+                
+                <hr width="100%">
+                <br>
+                <label for="maxResultRequest">Maximum Result Count:</label>
+                <input v-model="maxResultset" type="text" id="maxResultRequest">
+
+                <hr width="100%">
+                <input type="checkbox" id="checkbox100" v-model="check100"/>
+                <label for="checkbox100">Murder / Homicide</label>
+                
+                <input type="checkbox" id="checkbox200" v-model="check200"/>
+                <label for="checkbox200">Rape</label>
+                
+                <input type="checkbox" id="checkbox300" v-model="check300"/>
+                <label for="checkbox300">Robbery</label>
+                
+                <input type="checkbox" id="checkbox400" v-model="check400"/>
+                <label for="checkbox400">Aggravated Assault</label>
+                
+                <input type="checkbox" id="checkbox500" v-model="check500"/>
+                <label for="checkbox500">Burglary</label>
+                
+                <input type="checkbox" id="checkbox600" v-model="check600"/>
+                <label for="checkbox600">Theft</label>
+                
+                <input type="checkbox" id="checkbox800" v-model="check800"/>
+                <label for="checkbox800">Domestic Assault</label>
+                
+                <input type="checkbox" id="checkbox900" v-model="check900"/>
+                <label for="checkbox900">Arson</label>
+                <br>
+                <input type="checkbox" id="checkbox1400" v-model="check1400"/>
+                <label for="checkbox1400">Criminal Damage</label>
+                
+                <input type="checkbox" id="checkbox1800" v-model="check1800"/>
+                <label for="checkbox1800">Drugs</label>
+                
+                <input type="checkbox" id="checkbox2619" v-model="check2619"/>
+                <label for="checkbox2619">Weapon discharging in city limits</label>
+                
+                <input type="checkbox" id="checkbox3100" v-model="check3100"/>
+                <label for="checkbox3100">Death Investigation</label>
+                
+                <input type="checkbox" id="checkbox9000" v-model="check9000"/>
+                <label for="checkbox9000">police visit/community engagement / foot patrol</label>
+                <br>
+                <hr width="100%">
+                
+                <!-- /incidents?start_date=yyyy-mm-dd&end_date=yyyy-mm-dd&code=110,700&grid=38,65&neighborhood=11,14&limit=15 -->
+
+                <br><br>
+                <button type="submit">SUBMIT</button>
+                <!-- <button type="button" @click="this.getData('', '', 'start_date=2021-12-1&end_date=2021-12-31');">SUBMIT QUERY</button>  -->
+                <button type="button" @click="this.getData('', '', '');">RESET TABLE</button> 
+                <!-- <input type="submit" value="Submit Query"> -->
+            </form>
         </div>
+        
         <div class="grid-x grid-padding-x" style="padding: 15px;">
             <div class="large-12 medium-12 small-12 cell table_format Flipped">
                 <div style="padding: 5px;"></div>
@@ -882,14 +897,12 @@ export default {
 #search-condition {
     width: 150px;
 }
-
 .main_container {
     background: radial-gradient(at bottom right, #d5dbd8 0, #d5dbd8 17.25px, rgba(213, 219, 216, 0.2) 17.25px, rgba(213, 219, 216, 0.2) 34.5px, rgba(213, 219, 216, 0.75) 34.5px, rgba(213, 219, 216, 0.75) 51.75px, rgba(213, 219, 216, 0.25) 51.75px, rgba(213, 219, 216, 0.25) 69px, rgba(213, 219, 216, 0.3) 69px, rgba(213, 219, 216, 0.3) 86.25px, rgba(213, 219, 216, 0.75) 86.25px, rgba(213, 219, 216, 0.75) 103.5px, rgba(213, 219, 216, 0.2) 103.5px, rgba(213, 219, 216, 0.2) 120.75px, transparent 120.75px, transparent 138px), radial-gradient(at top left, transparent 0, transparent 17.25px, rgba(213, 219, 216, 0.2) 17.25px, rgba(213, 219, 216, 0.2) 34.5px, rgba(213, 219, 216, 0.75) 34.5px, rgba(213, 219, 216, 0.75) 51.75px, rgba(213, 219, 216, 0.3) 51.75px, rgba(213, 219, 216, 0.3) 69px, rgba(213, 219, 216, 0.25) 69px, rgba(213, 219, 216, 0.25) 86.25px, rgba(213, 219, 216, 0.75) 86.25px, rgba(213, 219, 216, 0.75) 103.5px, rgba(213, 219, 216, 0.2) 103.5px, rgba(213, 219, 216, 0.2) 120.75px, #d5dbd8 120.75px, #d5dbd8 138px, transparent 138px, transparent 345px);
     background-blend-mode: multiply;
     background-size: 138px 138px, 138px 138px;
     background-color: #586ba4;
 }
-
 button {
     padding: 8px;
     background-color: #586ba4;
@@ -897,56 +910,45 @@ button {
     margin: 5px;
     cursor: pointer;
 }
-
 button:hover {
     background-color: #3d496f;
 }
-
 table {
     border-collapse: collapse;
     width: 100%;
 }
-
 td,
 th {
     border: 1px black solid;
     text-align: center;
     padding: 2px;
 }
-
 th {
     background-color: rgb(150, 150, 150);
 }
-
 .table_format {
     background-color: rgb(200, 200, 200);
     overflow-x: auto;
 }
-
 .violent {
     background-color: #A44A3F;
 }
-
 .property {
     background-color: #D19C1D;
 }
-
 .other {
     background-color: #32936F;
 }
-
 .color-legend {
     display: flex;
     justify-content: space-evenly;
 }
-
 .box {
     width: 20px;
     height: 20px;
     border: 1px black solid;
     margin-left: 5px;
 }
-
 .Flipped,
 .Flipped .Content {
     transform: rotateX(180deg);
@@ -955,22 +957,17 @@ th {
     -webkit-transform: rotateX(180deg);
     /* Safari and Chrome */
 }
-
 .search_format {
     display: flex;
 }
-
 img {
     height: 20px;
     margin: auto;
 }
-
 .buffer {}
-
 #leafletmap {
     height: 500px;
 }
-
 .selected {
     background-color: rgb(10, 100, 126);
     color: white;
@@ -981,7 +978,6 @@ img {
     padding-right: 2rem;
     margin: auto;
 }
-
 .unselected {
     background-color: rgb(200, 200, 200);
     color: black;
@@ -991,46 +987,5 @@ img {
     padding-left: 2rem;
     padding-right: 2rem;
     margin: auto;
-}
-
-.dropdown-item {
-    display: flex;
-    align-items: center;
-}
-
-.fade-enter-active,
-.fade-leave-active {
-    transition: opacity 0.5s;
-}
-
-.fade-enter,
-.fade-leave-to {
-    opacity: 0;
-}
-
-#drop-down-UI {
-    list-style: none;
-    padding: 0;
-    width: 250px;
-    background-color: rgba(150, 150, 150, 0.5);
-    border-radius: 10px;
-}
-
-#checkmark-neighborhood {
-    margin-top: 5px;
-    padding-left: 10px;
-}
-
-#ui-filters {
-    margin: 10px;
-    background-color: rgb(200, 200, 200);
-}
-
-#limit-text-bar {
-    width: 200px;
-}
-
-label {
-    margin-top: 10px;
 }
 </style>
