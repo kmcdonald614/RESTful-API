@@ -71,7 +71,9 @@ export default defineComponent({
                 observation_6: {
                     author: "Marcus Haldane",
                     observation: `One negative observation I had was the amount of property crime including theft and arson is 
-                    very high.`
+                    very high. Additionally, there is also a very high amount of drug crimes in the database. These observations, 
+                    along with the above observation on violent crimes, paint a picture of mostly non-violent criminality in the St. 
+                    Paul area under study.`
                 }
             },
             logo: {

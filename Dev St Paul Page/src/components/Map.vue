@@ -580,9 +580,9 @@ export default {
             }
         },
         addFilter(){
+            
             let newFilter = 'code=';
             let isFirst = true;
-            //newFilter = 'code='+this.newCode;
 
             if(this.check100){
                 newFilter += '100'
@@ -672,6 +672,13 @@ export default {
                 newFilter += '9000'
                 isFirst = false;
             }
+
+            if(isFirst){
+                newFilter = 'limit=' + this.maxResultset;
+            } else {
+                newFilter += '&limit=' + this.maxResultset;
+            }
+
             alert(newFilter);
             this.getData('', '', newFilter)
         }
@@ -780,59 +787,63 @@ export default {
                 <label for="endDate">End Date:</label>
                 <input v-model="newEndDate" type="date" id="endDate">
                 
-                <!-- <br>
-                <label for="newcode">Code:</label>
-                <input v-model="newCode" type="text" id="newcode"> -->
-
+                <hr width="100%">
                 <br>
+                <label for="maxResultRequest">Maximum Result Count:</label>
+                <input v-model="maxResultset" type="text" id="maxResultRequest">
+
+                <hr width="100%">
                 <input type="checkbox" id="checkbox100" v-model="check100"/>
                 <label for="checkbox100">Murder / Homicide</label>
-                <br>
+                
                 <input type="checkbox" id="checkbox200" v-model="check200"/>
                 <label for="checkbox200">Rape</label>
-                <br>
+                
                 <input type="checkbox" id="checkbox300" v-model="check300"/>
                 <label for="checkbox300">Robbery</label>
-                <br>
+                
                 <input type="checkbox" id="checkbox400" v-model="check400"/>
                 <label for="checkbox400">Aggravated Assault</label>
-                <br>
+                
                 <input type="checkbox" id="checkbox500" v-model="check500"/>
                 <label for="checkbox500">Burglary</label>
-                <br>
+                
                 <input type="checkbox" id="checkbox600" v-model="check600"/>
                 <label for="checkbox600">Theft</label>
-                <br>
+                
                 <input type="checkbox" id="checkbox800" v-model="check800"/>
                 <label for="checkbox800">Domestic Assault</label>
-                <br>
+                
                 <input type="checkbox" id="checkbox900" v-model="check900"/>
                 <label for="checkbox900">Arson</label>
                 <br>
                 <input type="checkbox" id="checkbox1400" v-model="check1400"/>
                 <label for="checkbox1400">Criminal Damage</label>
-                <br>
+                
                 <input type="checkbox" id="checkbox1800" v-model="check1800"/>
                 <label for="checkbox1800">Drugs</label>
-                <br>
+                
                 <input type="checkbox" id="checkbox2619" v-model="check2619"/>
                 <label for="checkbox2619">Weapon discharging in city limits</label>
-                <br>
+                
                 <input type="checkbox" id="checkbox3100" v-model="check3100"/>
                 <label for="checkbox3100">Death Investigation</label>
-                <br>
+                
                 <input type="checkbox" id="checkbox9000" v-model="check9000"/>
                 <label for="checkbox9000">police visit/community engagement / foot patrol</label>
                 <br>
+                <hr width="100%">
+                
                 <!-- /incidents?start_date=yyyy-mm-dd&end_date=yyyy-mm-dd&code=110,700&grid=38,65&neighborhood=11,14&limit=15 -->
 
                 <br><br>
                 <button type="submit">SUBMIT</button>
-                <!-- <button type="button" @click="this.getData('', '', 'code=110');">SUBMIT QUERY</button>  -->
+                <button type="button" @click="this.getData('', '', 'start_date=2021-12-1&end_date=2021-12-31');">SUBMIT QUERY</button> 
                 <button type="button" @click="this.getData('', '', '');">RESET TABLE</button> 
                 <!-- <input type="submit" value="Submit Query"> -->
             </form>
         </div>
+        
         <div class="grid-x grid-padding-x" style="padding: 15px;">
             <div class="large-12 medium-12 small-12 cell table_format Flipped">
                 <div style="padding: 5px;"></div>
