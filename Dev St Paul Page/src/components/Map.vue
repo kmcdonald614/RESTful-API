@@ -774,7 +774,7 @@ export default {
         </div>
         <!-- UI insert here -->
         <div>
-            
+            <br>
             <form @submit.prevent="addFilter">
                 <p>Filter By: </p><br>
                 <!-- <input type="checkbox" id="criteria1" name="criteria1">
