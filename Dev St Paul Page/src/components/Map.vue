@@ -679,7 +679,7 @@ export default {
                 }
             } 
             
-            alert(newFilter);
+            // alert(newFilter);
             this.getData('', '', newFilter)
         }
     },
