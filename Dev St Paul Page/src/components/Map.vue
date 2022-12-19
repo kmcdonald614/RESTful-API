@@ -838,7 +838,7 @@ export default {
 
                 <br><br>
                 <button type="submit">SUBMIT</button>
-                <button type="button" @click="this.getData('', '', 'start_date=2021-12-1&end_date=2021-12-31');">SUBMIT QUERY</button> 
+                <!-- <button type="button" @click="this.getData('', '', 'start_date=2021-12-1&end_date=2021-12-31');">SUBMIT QUERY</button>  -->
                 <button type="button" @click="this.getData('', '', '');">RESET TABLE</button> 
                 <!-- <input type="submit" value="Submit Query"> -->
             </form>
