@@ -679,7 +679,7 @@ export default {
                 newFilter += '&limit=' + this.maxResultset;
             }
 
-            alert(newFilter);
+            // alert(newFilter);
             this.getData('', '', newFilter)
         }
     },
