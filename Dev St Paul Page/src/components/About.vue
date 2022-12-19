@@ -31,11 +31,15 @@ export default defineComponent({
                 },
                 profile_3: {
                     name: "Marcus Haldane",
-                    bio: ``,
-                    hobby: "???",
-                    age: 0,
-                    image: "../../images/profile.png" // should be a 300px by 300px image
+                    bio: `Marcus began to work on his Computer Science degree at the University of Colorado at Boulder where he 
+                    enjoyed skiing and various other outdoor activities. During the outbreak of COVID-19, Marcus moved back to Minnesota,
+                    where he had grown up. Shortly after this, Marcus was able to begin attending St. Thomas classes in person, a definite 
+                    pull factor, and continues to work towards his degree to this day.`,
+                    hobby: "Skiing, Snowshoeing, Biking, 3D Printing",
+                    age: 24,
+                    image: "../../images/Marcus_Haldane.png" // should be a 300px by 300px image
                 }
+                
             },
             observations: {
                 observation_1: {
