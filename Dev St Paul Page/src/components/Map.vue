@@ -22,7 +22,6 @@ export default {
         return {
             newStartDate: [],
             newEndDate: [],
-            newCode: [],
             codes: [],
             neighborhoods: [],
             incidents: [],
@@ -672,14 +671,15 @@ export default {
                 newFilter += '9000'
                 isFirst = false;
             }
-
-            if(isFirst){
+            if(!this.maxResultset == null){
+                if(isFirst){
                 newFilter = 'limit=' + this.maxResultset;
-            } else {
-                newFilter += '&limit=' + this.maxResultset;
-            }
-
-            // alert(newFilter);
+                } else {
+                    newFilter += '&limit=' + this.maxResultset;
+                }
+            } 
+            
+            alert(newFilter);
             this.getData('', '', newFilter)
         }
     },
