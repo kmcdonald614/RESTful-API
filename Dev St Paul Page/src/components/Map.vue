@@ -20,6 +20,9 @@ export default {
     },
     data() {
         return {
+            newStartDate: [],
+            newEndDate: [],
+            newCode: [],
             codes: [],
             neighborhoods: [],
             incidents: [],
@@ -575,6 +578,102 @@ export default {
                 window.requestAnimationFrame(this.scrollToTop);
                 window.scrollTo(0, c - c / 8);
             }
+        },
+        addFilter(){
+            let newFilter = 'code=';
+            let isFirst = true;
+            //newFilter = 'code='+this.newCode;
+
+            if(this.check100){
+                newFilter += '100'
+                isFirst = false;
+            }
+            if(this.check200){
+                if(!isFirst){
+                    newFilter += ','    
+                }
+                newFilter += '200'
+                isFirst = false;
+            }
+            if(this.check300){
+                if(!isFirst){
+                    newFilter += ','    
+                }
+                newFilter += '300'
+                isFirst = false;
+            }
+            if(this.check400){
+                if(!isFirst){
+                    newFilter += ','    
+                }
+                newFilter += '400'
+                isFirst = false;
+            }
+            if(this.check500){
+                if(!isFirst){
+                    newFilter += ','    
+                }
+                newFilter += '500'
+                isFirst = false;
+            }
+            if(this.check600){
+                if(!isFirst){
+                    newFilter += ','    
+                }
+                newFilter += '600'
+                isFirst = false;
+            }
+            if(this.check800){
+                if(!isFirst){
+                    newFilter += ','    
+                }
+                newFilter += '800'
+                isFirst = false;
+            }
+            if(this.check900){
+                if(!isFirst){
+                    newFilter += ','    
+                }
+                newFilter += '900'
+                isFirst = false;
+            }
+            if(this.check1400){
+                if(!isFirst){
+                    newFilter += ','    
+                }
+                newFilter += '1400'
+                isFirst = false;
+            }
+            if(this.check1800){
+                if(!isFirst){
+                    newFilter += ','    
+                }
+                newFilter += '1800'
+                isFirst = false;
+            }
+            if(this.check2619){
+                if(!isFirst){
+                    newFilter += ','    
+                }
+                newFilter += '2619'
+                isFirst = false;
+            }
+            if(this.check3100){
+                if(!isFirst){
+                    newFilter += ','    
+                }
+                newFilter += '3100'
+                isFirst = false;
+            }
+            if(this.check9000){
+                if(!isFirst){
+                    newFilter += ','    
+                }
+                newFilter += '9000'
+                isFirst = false;
+            }
+            alert(newFilter);
+            this.getData('', '', newFilter)
         }
     },
     created() {
@@ -667,6 +766,73 @@ export default {
             <div class="large-1 medium-1 small-0 cell buffer"></div>
         </div>
         <!-- UI insert here -->
+        <div>
+            
+            <form @submit.prevent="addFilter">
+                <p>Filter By: </p><br>
+                <!-- <input type="checkbox" id="criteria1" name="criteria1">
+                <label for="criteria1"> Case Number Range</label> -->
+
+                <!-- Date Criteria -->                
+                <label for="startDate">Start Date:</label>
+                <input v-model="newStartDate" type="date" id="startDate">
+                <br>
+                <label for="endDate">End Date:</label>
+                <input v-model="newEndDate" type="date" id="endDate">
+                
+                <!-- <br>
+                <label for="newcode">Code:</label>
+                <input v-model="newCode" type="text" id="newcode"> -->
+
+                <br>
+                <input type="checkbox" id="checkbox100" v-model="check100"/>
+                <label for="checkbox100">Murder / Homicide</label>
+                <br>
+                <input type="checkbox" id="checkbox200" v-model="check200"/>
+                <label for="checkbox200">Rape</label>
+                <br>
+                <input type="checkbox" id="checkbox300" v-model="check300"/>
+                <label for="checkbox300">Robbery</label>
+                <br>
+                <input type="checkbox" id="checkbox400" v-model="check400"/>
+                <label for="checkbox400">Aggravated Assault</label>
+                <br>
+                <input type="checkbox" id="checkbox500" v-model="check500"/>
+                <label for="checkbox500">Burglary</label>
+                <br>
+                <input type="checkbox" id="checkbox600" v-model="check600"/>
+                <label for="checkbox600">Theft</label>
+                <br>
+                <input type="checkbox" id="checkbox800" v-model="check800"/>
+                <label for="checkbox800">Domestic Assault</label>
+                <br>
+                <input type="checkbox" id="checkbox900" v-model="check900"/>
+                <label for="checkbox900">Arson</label>
+                <br>
+                <input type="checkbox" id="checkbox1400" v-model="check1400"/>
+                <label for="checkbox1400">Criminal Damage</label>
+                <br>
+                <input type="checkbox" id="checkbox1800" v-model="check1800"/>
+                <label for="checkbox1800">Drugs</label>
+                <br>
+                <input type="checkbox" id="checkbox2619" v-model="check2619"/>
+                <label for="checkbox2619">Weapon discharging in city limits</label>
+                <br>
+                <input type="checkbox" id="checkbox3100" v-model="check3100"/>
+                <label for="checkbox3100">Death Investigation</label>
+                <br>
+                <input type="checkbox" id="checkbox9000" v-model="check9000"/>
+                <label for="checkbox9000">police visit/community engagement / foot patrol</label>
+                <br>
+                <!-- /incidents?start_date=yyyy-mm-dd&end_date=yyyy-mm-dd&code=110,700&grid=38,65&neighborhood=11,14&limit=15 -->
+
+                <br><br>
+                <button type="submit">SUBMIT</button>
+                <!-- <button type="button" @click="this.getData('', '', 'code=110');">SUBMIT QUERY</button>  -->
+                <button type="button" @click="this.getData('', '', '');">RESET TABLE</button> 
+                <!-- <input type="submit" value="Submit Query"> -->
+            </form>
+        </div>
         <div class="grid-x grid-padding-x" style="padding: 15px;">
             <div class="large-12 medium-12 small-12 cell table_format Flipped">
                 <div style="padding: 5px;"></div>

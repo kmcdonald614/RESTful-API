@@ -47,7 +47,7 @@
 
 - [ ] Create UI controls to filter crime data
     - [ ] Filter based on the following
-        - [ ] incident_type: list of checkboxes per incident_type
+        - [x] incident_type: list of checkboxes per incident_type
                 OK (in fact recommended) to aggregate similar incident types (e.g. codes 1800 - 1885 are all sub-categories of 'Narcotics')
         - [ ] neighborhood_name: list of checkboxes per neighborhood_name
             date range: select a start and end date (only show crimes between those dates)
